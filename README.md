@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CRM Juventud
 
-## Getting Started
+Sistema de gestión para ministerios juveniles. Construido con Next.js 15 (App Router), Prisma, Tailwind CSS, shadcn/ui y NextAuth v5.
 
-First, run the development server:
+## Requisitos previos
 
+- Node.js (v18 o superior)
+- PostgreSQL (puedes usar Docker, Neon.tech o Supabase)
+
+## Instalación
+
+1. Clona el repositorio e instala las dependencias:
+   ```bash
+   npm install
+   ```
+
+2. Configura las variables de entorno. Renombra o edita el archivo `.env`:
+   ```bash
+   DATABASE_URL="postgresql://usuario:password@localhost:5432/juventud?schema=public"
+   NEXTAUTH_SECRET="tu-secreto-seguro"
+   NEXTAUTH_URL="http://localhost:3000"
+   ```
+
+3. Sincroniza el esquema de la base de datos (asegúrate de que tu PostgreSQL esté corriendo):
+   ```bash
+   npx prisma db push
+   ```
+
+4. Genera los datos de prueba (Seed):
+   Instala `tsx` globalmente si no lo tienes (`npm install -g tsx`) y corre el seed:
+   ```bash
+   npx tsx prisma/seed.ts
+   ```
+   *Credenciales de prueba generadas por el seed:*
+   - **Admin:** admin@juventud.com / admin123
+   - **Líder 1:** juan@juventud.com / lider123
+   - **Líder 2:** maria@juventud.com / lider123
+
+## Ejecutar en local
+
+Inicia el servidor de desarrollo:
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre [http://localhost:3000](http://localhost:3000) con tu navegador para ver el resultado.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Arquitectura y Decisiones
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Next.js App Router:** Manejando tanto el frontend como el backend (Server Actions para mutaciones).
+- **Prisma + PostgreSQL:** Modelo relacional fuerte. Se usa `@prisma/adapter-pg` para compatibilidad futura y soporte en el edge si fuera necesario.
+- **shadcn/ui + Tailwind:** Componentes altamente personalizables, accesibles y con diseño limpio y profesional.
+- **NextAuth.js (v5 beta):** Para manejo de sesiones seguras por credenciales, middlewares de protección de rutas y tipado de roles (Admin, Leader, Viewer).

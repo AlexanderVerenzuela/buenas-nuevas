@@ -1,0 +1,286 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------
+// ENUMS
+// ---------------------------------------------------------
+
+enum Role {
+  ADMIN
+  LEADER
+  VIEWER
+}
+
+enum YouthStatus {
+  VISITOR   // Visita
+  NEW       // Nuevo
+  MEMBER    // Miembro
+  LEADER    // Líder
+  INACTIVE  // Inactivo
+  COMMISSION // Comisión
+  PREACHING  // Prédica
+  FAMILY     // Familiar
+}
+
+enum DiscipleshipStatus {
+  NOT_STARTED // No inició
+  IN_PROGRESS // En proceso
+  COMPLETED   // Completado
+}
+
+enum MeetingType {
+  GENERAL       // Reunión general juvenil
+  DISCIPLESHIP  // Discipulado
+  CELL_GROUP    // Célula / grupo pequeño
+  SPECIAL_EVENT // Evento especial
+  CAMP          // Campamento / retiro
+}
+
+enum MeetingStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
+  VISITOR
+}
+
+enum FollowUpType {
+  CALL
+  IN_PERSON
+  WHATSAPP
+  COUNSELING
+  VISIT
+  PRAYER
+  OTHER
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum FollowUpStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+// ---------------------------------------------------------
+// MODELOS
+// ---------------------------------------------------------
+
+// Usuario del sistema para autenticación
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String    // Hash de la contraseña
+  name          String?
+  role          Role      @default(VIEWER)
+  isActive      Boolean   @default(true)
+  
+  leaderProfile Leader?   // Opcional: Un usuario puede estar vinculado a un perfil de líder
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+// Perfil de Líder (Independiente del Login, aunque puede estar vinculado)
+model Leader {
+  id            String    @id @default(cuid())
+  firstName     String
+  lastName      String
+  phone         String?
+  email         String?
+  gender        String?   // M, F
+  birthDate     DateTime?
+  isActive      Boolean   @default(true)
+  observations  String?   @db.Text
+  
+  userId        String?   @unique
+  user          User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  youthId       String?   @unique
+  youthProfile  Youth?    @relation("YouthToLeaderProfile", fields: [youthId], references: [id], onDelete: SetNull)
+
+  // Relaciones
+  assignedYouth     Youth[]             @relation("LeaderAssignedYouth")
+  discipleshipGroup DiscipleshipGroup?  // Un líder lidera un grupo principal
+  followUpsMade     FollowUp[]          // Seguimientos realizados por el líder
+  meetingsLed       Meeting[]           // Reuniones que este líder organiza o lidera
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+// Entidad Principal: Joven / Persona
+model Youth {
+  id                String    @id @default(cuid())
+  // Datos Personales
+  firstName         String
+  lastName          String
+  gender            String?
+  birthDate         DateTime?
+  phone             String?
+  whatsapp          String?
+  email             String?
+  address           String?
+  avatarUrl         String?
+  
+  // Información General
+  status            YouthStatus @default(VISITOR)
+  firstContactDate  DateTime?   @default(now())
+  joinDate          DateTime?
+  campus            String?     // Sede/Iglesia si aplica
+  observations      String?     @db.Text
+  
+  // Estudios / Trabajo
+  isStudying        Boolean   @default(false)
+  career            String?
+  studyCenter       String?
+  studyCycle        String?
+  isWorking         Boolean   @default(false)
+  workplace         String?
+  occupation        String?
+  
+  // Información Espiritual
+  isConverted       Boolean?  // null = no se sabe, true = sí, false = no
+  conversionDate    DateTime?
+  isBaptized        Boolean?  // null = en proceso, true = sí, false = no
+  baptismDate       DateTime?
+  discipleship      DiscipleshipStatus @default(NOT_STARTED)
+  servesInMinistry  Boolean   @default(false)
+  
+  // Cálculos / Sistema
+  isActive          Boolean   @default(true)
+  needsFollowUp     Boolean   @default(false)
+  followUpReason    String?
+  
+  // Relaciones Externas
+  leaderId          String?
+  leader            Leader?             @relation("LeaderAssignedYouth", fields: [leaderId], references: [id], onDelete: SetNull)
+  
+  groupId           String?
+  group             DiscipleshipGroup?  @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  
+  attendances       Attendance[]
+  followUps         FollowUp[]
+  ministries        YouthMinistry[]
+
+  leaderProfile     Leader?             @relation("YouthToLeaderProfile")
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+// Grupos de Discipulado
+model DiscipleshipGroup {
+  id            String    @id @default(cuid())
+  name          String
+  description   String?   @db.Text
+  meetingDay    String?   // Ej. "Miércoles"
+  meetingTime   String?   // Ej. "19:00"
+  location      String?
+  isActive      Boolean   @default(true)
+
+  leaderId      String    @unique
+  leader        Leader    @relation(fields: [leaderId], references: [id])
+  coLeaderId    String?   // Puede ser el ID de otro líder o texto libre
+  coLeaderName  String?
+  
+  members       Youth[]
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+// Reuniones / Eventos
+model Meeting {
+  id            String    @id @default(cuid())
+  title         String
+  type          MeetingType
+  date          DateTime
+  time          String?
+  location      String?
+  description   String?   @db.Text
+  status        MeetingStatus @default(SCHEDULED)
+  
+  leaderId      String?   // Responsable de la reunión (opcional)
+  leader        Leader?   @relation(fields: [leaderId], references: [id], onDelete: SetNull)
+
+  attendances   Attendance[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+// Asistencias
+model Attendance {
+  id            String    @id @default(cuid())
+  status        AttendanceStatus
+  observations  String?
+  
+  youthId       String
+  youth         Youth     @relation(fields: [youthId], references: [id], onDelete: Cascade)
+  
+  meetingId     String
+  meeting       Meeting   @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime  @default(now())
+  
+  @@unique([youthId, meetingId]) // Un joven solo puede tener una asistencia por reunión
+}
+
+// Seguimiento / Pastoreo
+model FollowUp {
+  id                  String    @id @default(cuid())
+  type                FollowUpType
+  notes               String    @db.Text
+  priority            Priority  @default(MEDIUM)
+  
+  requiresNextFollowUp Boolean  @default(false)
+  nextFollowUpDate     DateTime?
+  status              FollowUpStatus @default(COMPLETED)
+
+  youthId             String
+  youth               Youth     @relation(fields: [youthId], references: [id], onDelete: Cascade)
+  
+  leaderId            String
+  leader              Leader    @relation(fields: [leaderId], references: [id], onDelete: Restrict)
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+// Ministerios (M/M)
+model Ministry {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  isActive    Boolean   @default(true)
+  
+  youth       YouthMinistry[]
+}
+
+model YouthMinistry {
+  youthId     String
+  youth       Youth     @relation(fields: [youthId], references: [id], onDelete: Cascade)
+  
+  ministryId  String
+  ministry    Ministry  @relation(fields: [ministryId], references: [id], onDelete: Cascade)
+
+  joinedAt    DateTime  @default(now())
+
+  @@id([youthId, ministryId])
+}
