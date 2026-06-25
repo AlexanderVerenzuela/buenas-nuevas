@@ -40,10 +40,8 @@ export function StatusOrderConfig({ order, setOrder }: { order: string[], setOrd
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2 mb-4 bg-card">
-          <Settings className="h-4 w-4" /> Configurar Orden de Estados
-        </Button>
+      <DialogTrigger render={<Button variant="outline" size="sm" className="gap-2 mb-4 bg-card" />}>
+        <Settings className="h-4 w-4" /> Configurar Orden de Estados
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
