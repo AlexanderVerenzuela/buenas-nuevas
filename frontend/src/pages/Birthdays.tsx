@@ -107,7 +107,7 @@ export default function Birthdays() {
             <CalendarDays className="w-5 h-5 text-blue-400" /> Próximos 30 días
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {upcomingBirthdays.map(b => (
+            {upcomingBirthdays.map((b: any) => (
               <BirthdayCard key={b.id} person={b} />
             ))}
           </div>
@@ -132,7 +132,7 @@ export default function Birthdays() {
               <div key={m} className="bg-card/30 border border-white/5 rounded-xl p-5 shadow-sm">
                 <h4 className="font-medium text-lg text-primary mb-4">{months[m]}</h4>
                 <div className="space-y-3">
-                  {groupedLater[m].map(b => (
+                  {groupedLater[m].map((b: any) => (
                     <div key={b.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/30 transition-colors">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden border border-white/10">
@@ -164,7 +164,7 @@ export default function Birthdays() {
 }
 
 function BirthdayCard({ person, highlight = false }: { person: any, highlight?: boolean }) {
-  const ageTurns = new Date().getFullYear() - person.originalYear + (person.isToday || person.diffDays < 0 ? 0 : 1);
+  // const ageTurns = new Date().getFullYear() - person.originalYear + (person.isToday || person.diffDays < 0 ? 0 : 1); // removed unused variable
   // Wait, if it's today, they turn the age. If it's upcoming, they will turn the age.
   
   return (

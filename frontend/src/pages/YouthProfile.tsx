@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
-import { ArrowLeft, Save, Briefcase, GraduationCap, MapPin, CalendarDays, Phone, ZoomIn } from 'lucide-react';
+import { ArrowLeft, Save, Briefcase, GraduationCap, CalendarDays, Phone, ZoomIn } from 'lucide-react';
 import { EditYouthForm } from '../components/modules/EditYouthForm';
 
 function calculateAge(birthDateString: string) {
