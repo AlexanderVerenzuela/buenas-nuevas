@@ -73,9 +73,9 @@ export function AttendanceTableClient({
         status
       }))
       
-      await request(`/meetings/${meetingId}/attendance`, {
+      await request(`/attendance/bulk`, {
         method: 'POST',
-        body: JSON.stringify({ attendance: attendanceArray })
+        body: JSON.stringify({ meetingId: meetingId, attendances: attendanceArray })
       })
       
       // Actualizar estado local para reflejar que todos los no marcados ahora son Faltó

@@ -21,8 +21,8 @@ export const users = pgTable('User', {
   name: text('name'),
   role: text('role', { enum: roleEnum }).default('VIEWER').notNull(),
   isActive: boolean('isActive').default(true).notNull(),
-  createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
+  createdAt: timestamp('createdAt', { mode: 'date' }).$defaultFn(() => new Date()).notNull(),
+  updatedAt: timestamp('updatedAt', { mode: 'date' }).$defaultFn(() => new Date()).$onUpdate(() => new Date()).notNull(),
 });
 
 export const leaders = pgTable('Leader', {
@@ -37,8 +37,8 @@ export const leaders = pgTable('Leader', {
   observations: text('observations'),
   userId: text('userId').unique().references(() => users.id, { onDelete: 'set null' }),
   youthId: text('youthId').unique(), // references youth.id handled in relations or manually below
-  createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
+  createdAt: timestamp('createdAt', { mode: 'date' }).$defaultFn(() => new Date()).notNull(),
+  updatedAt: timestamp('updatedAt', { mode: 'date' }).$defaultFn(() => new Date()).$onUpdate(() => new Date()).notNull(),
 });
 
 export const youths = pgTable('Youth', {
@@ -53,7 +53,7 @@ export const youths = pgTable('Youth', {
   address: text('address'),
   avatarUrl: text('avatarUrl'),
   status: text('status', { enum: youthStatusEnum }).default('VISITOR').notNull(),
-  firstContactDate: timestamp('firstContactDate', { mode: 'date' }).defaultNow(),
+  firstContactDate: timestamp('firstContactDate', { mode: 'date' }).$defaultFn(() => new Date()),
   joinDate: timestamp('joinDate', { mode: 'date' }),
   campus: text('campus'),
   observations: text('observations'),
@@ -73,8 +73,8 @@ export const youths = pgTable('Youth', {
   isActive: boolean('isActive').default(true).notNull(),
   leaderId: text('leaderId').references(() => leaders.id, { onDelete: 'set null' }),
   groupId: text('groupId'), // references DiscipleshipGroup
-  createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
+  createdAt: timestamp('createdAt', { mode: 'date' }).$defaultFn(() => new Date()).notNull(),
+  updatedAt: timestamp('updatedAt', { mode: 'date' }).$defaultFn(() => new Date()).$onUpdate(() => new Date()).notNull(),
 });
 
 export const discipleshipGroups = pgTable('DiscipleshipGroup', {
@@ -88,8 +88,8 @@ export const discipleshipGroups = pgTable('DiscipleshipGroup', {
   leaderId: text('leaderId').unique().notNull().references(() => leaders.id),
   coLeaderId: text('coLeaderId'),
   coLeaderName: text('coLeaderName'),
-  createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
+  createdAt: timestamp('createdAt', { mode: 'date' }).$defaultFn(() => new Date()).notNull(),
+  updatedAt: timestamp('updatedAt', { mode: 'date' }).$defaultFn(() => new Date()).$onUpdate(() => new Date()).notNull(),
 });
 
 export const meetings = pgTable('Meeting', {
@@ -103,8 +103,8 @@ export const meetings = pgTable('Meeting', {
   photoUrl: text('photoUrl'),
   status: text('status', { enum: meetingStatusEnum }).default('SCHEDULED').notNull(),
   leaderId: text('leaderId').references(() => leaders.id, { onDelete: 'set null' }),
-  createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
+  createdAt: timestamp('createdAt', { mode: 'date' }).$defaultFn(() => new Date()).notNull(),
+  updatedAt: timestamp('updatedAt', { mode: 'date' }).$defaultFn(() => new Date()).$onUpdate(() => new Date()).notNull(),
 });
 
 export const attendances = pgTable('Attendance', {
@@ -113,7 +113,7 @@ export const attendances = pgTable('Attendance', {
   observations: text('observations'),
   youthId: text('youthId').notNull().references(() => youths.id, { onDelete: 'cascade' }),
   meetingId: text('meetingId').notNull().references(() => meetings.id, { onDelete: 'cascade' }),
-  createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
+  createdAt: timestamp('createdAt', { mode: 'date' }).$defaultFn(() => new Date()).notNull(),
 }, (table) => ({
   unq: unique('Attendance_youthId_meetingId_key').on(table.youthId, table.meetingId)
 }));
@@ -128,7 +128,7 @@ export const ministries = pgTable('Ministry', {
 export const youthMinistries = pgTable('YouthMinistry', {
   youthId: text('youthId').notNull().references(() => youths.id, { onDelete: 'cascade' }),
   ministryId: text('ministryId').notNull().references(() => ministries.id, { onDelete: 'cascade' }),
-  joinedAt: timestamp('joinedAt', { mode: 'date' }).defaultNow().notNull(),
+  joinedAt: timestamp('joinedAt', { mode: 'date' }).$defaultFn(() => new Date()).notNull(),
 }, (table) => ({
   pk: primaryKey({ columns: [table.youthId, table.ministryId] })
 }));

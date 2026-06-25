@@ -62,8 +62,11 @@ router.post('/', async (req, res) => {
   try {
     const { firstName, lastName, phone, email, status } = req.body;
 
+    const safeFirstName = firstName || '';
+    const safeLastName = lastName || '';
+
     const existingYouth = await db.query.youths.findFirst({
-      where: and(eq(youths.firstName, firstName), eq(youths.lastName, lastName)),
+      where: and(eq(youths.firstName, safeFirstName), eq(youths.lastName, safeLastName)),
     });
 
     if (existingYouth) {
@@ -71,10 +74,10 @@ router.post('/', async (req, res) => {
     }
 
     const newYouthArray = await db.insert(youths).values({
-      firstName,
-      lastName,
-      phone,
-      email,
+      firstName: safeFirstName,
+      lastName: safeLastName,
+      phone: phone || null,
+      email: email || null,
       status: status || 'VISITOR',
     }).returning();
 
@@ -94,9 +97,9 @@ router.post('/', async (req, res) => {
     }
 
     res.status(201).json({ success: true, youth: newYouth });
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
-    res.status(500).json({ error: 'Error al crear joven' });
+    res.status(500).json({ error: error.message || 'Error al crear joven' });
   }
 });
 
