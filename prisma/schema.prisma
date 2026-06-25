@@ -55,27 +55,7 @@ enum AttendanceStatus {
   VISITOR
 }
 
-enum FollowUpType {
-  CALL
-  IN_PERSON
-  WHATSAPP
-  COUNSELING
-  VISIT
-  PRAYER
-  OTHER
-}
 
-enum Priority {
-  LOW
-  MEDIUM
-  HIGH
-}
-
-enum FollowUpStatus {
-  PENDING
-  COMPLETED
-  CANCELLED
-}
 
 // ---------------------------------------------------------
 // MODELOS
@@ -117,7 +97,6 @@ model Leader {
   // Relaciones
   assignedYouth     Youth[]             @relation("LeaderAssignedYouth")
   discipleshipGroup DiscipleshipGroup?  // Un líder lidera un grupo principal
-  followUpsMade     FollowUp[]          // Seguimientos realizados por el líder
   meetingsLed       Meeting[]           // Reuniones que este líder organiza o lidera
   
   createdAt     DateTime  @default(now())
@@ -164,8 +143,6 @@ model Youth {
   
   // Cálculos / Sistema
   isActive          Boolean   @default(true)
-  needsFollowUp     Boolean   @default(false)
-  followUpReason    String?
   
   // Relaciones Externas
   leaderId          String?
@@ -175,7 +152,6 @@ model Youth {
   group             DiscipleshipGroup?  @relation(fields: [groupId], references: [id], onDelete: SetNull)
   
   attendances       Attendance[]
-  followUps         FollowUp[]
   ministries        YouthMinistry[]
 
   leaderProfile     Leader?             @relation("YouthToLeaderProfile")
@@ -242,26 +218,7 @@ model Attendance {
   @@unique([youthId, meetingId]) // Un joven solo puede tener una asistencia por reunión
 }
 
-// Seguimiento / Pastoreo
-model FollowUp {
-  id                  String    @id @default(cuid())
-  type                FollowUpType
-  notes               String    @db.Text
-  priority            Priority  @default(MEDIUM)
-  
-  requiresNextFollowUp Boolean  @default(false)
-  nextFollowUpDate     DateTime?
-  status              FollowUpStatus @default(COMPLETED)
 
-  youthId             String
-  youth               Youth     @relation(fields: [youthId], references: [id], onDelete: Cascade)
-  
-  leaderId            String
-  leader              Leader    @relation(fields: [leaderId], references: [id], onDelete: Restrict)
-  
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-}
 
 // Ministerios (M/M)
 model Ministry {
