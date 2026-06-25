@@ -5,6 +5,10 @@ import { defineConfig } from "vite"
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  build: {
+    outDir: "../dist",
+    emptyOutDir: true,
+  },
   resolve: {
     dedupe: ["react", "react-dom"],
     alias: {
