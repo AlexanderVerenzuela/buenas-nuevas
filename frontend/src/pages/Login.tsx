@@ -26,16 +26,16 @@ export default function Login() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       })
-      
+
       const data = await res.json()
-      
+
       if (!res.ok) {
         throw new Error(data.error || "Credenciales inválidas")
       }
-      
+
       login(data.token, data.user)
       navigate("/")
-      
+
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -56,10 +56,10 @@ export default function Login() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Correo electrónico</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="usuario@iglesia.com" 
+              <Input
+                id="email"
+                type="email"
+                placeholder="usuario@iglesia.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -67,9 +67,9 @@ export default function Login() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Contraseña</Label>
-              <Input 
-                id="password" 
-                type="password" 
+              <Input
+                id="password"
+                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required

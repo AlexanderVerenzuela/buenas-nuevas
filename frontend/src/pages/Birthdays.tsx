@@ -3,7 +3,7 @@ import { useApi } from '../hooks/useApi';
 import { Gift, CalendarDays, User, Cake } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
-import { BACKEND_URL } from '../lib/config';
+import { getImageUrl } from '../lib/utils';
 
 function getNextBirthdayInfo(dateStr: string) {
   const [yyyy, mm, dd] = dateStr.split('T')[0].split('-');
@@ -138,7 +138,7 @@ export default function Birthdays() {
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden border border-white/10">
                           {b.avatarUrl ? (
-                            <img src={b.avatarUrl.startsWith('http') ? b.avatarUrl : `${BACKEND_URL}${b.avatarUrl}`} alt="" className="w-full h-full object-cover" />
+                            <img src={getImageUrl(b.avatarUrl)} alt="" className="w-full h-full object-cover" />
                           ) : (
                             <User className="w-4 h-4 text-muted-foreground" />
                           )}
@@ -172,7 +172,7 @@ function BirthdayCard({ person, highlight = false }: { person: any, highlight?: 
     <div className={`flex items-center gap-4 p-4 rounded-xl transition-all hover:scale-[1.02] ${highlight ? 'bg-background shadow-md' : 'bg-card border border-white/5 shadow-sm hover:shadow-md'}`}>
       <div className="w-14 h-14 rounded-full border-2 border-background shadow-sm overflow-hidden bg-muted flex items-center justify-center flex-shrink-0">
         {person.avatarUrl ? (
-          <img src={person.avatarUrl.startsWith('http') ? person.avatarUrl : `${BACKEND_URL}${person.avatarUrl}`} alt="" className="w-full h-full object-cover" />
+          <img src={getImageUrl(person.avatarUrl)} alt="" className="w-full h-full object-cover" />
         ) : (
           <User className="w-6 h-6 text-muted-foreground" />
         )}

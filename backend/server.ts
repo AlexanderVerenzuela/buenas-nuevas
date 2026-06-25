@@ -38,6 +38,10 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   res.status(500).json({ error: 'Hubo un error en el servidor.' });
 });
 
-app.listen(PORT, () => {
-  console.log(`Servidor Backend corriendo en el puerto ${PORT}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Servidor Backend corriendo en el puerto ${PORT}`);
+  });
+}
+
+export default app;
