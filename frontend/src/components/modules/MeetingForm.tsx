@@ -185,7 +185,7 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem }: { onSubmi
               <Label htmlFor="type">Tipo de Reunión</Label>
               <Select 
                 name="type" 
-                value={meetingType} 
+                defaultValue={initialData?.type || "GENERAL"} 
                 onValueChange={(val) => setMeetingType(val || "GENERAL")} 
                 required
               >
