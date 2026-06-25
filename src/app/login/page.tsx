@@ -1,13 +1,13 @@
 "use client"
 
-import { useActionState } from "react"
+// import removed; useActionState not needed
 import { loginAction } from "@/actions/auth"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 export default function LoginPage() {
-  const [state, formAction, pending] = useActionState(loginAction, undefined)
+  const formAction = loginAction
 
   return (
     <div className="flex h-screen w-full items-center justify-center bg-background relative overflow-hidden">
@@ -33,15 +33,10 @@ export default function LoginPage() {
               <Input id="password" name="password" type="password" required className="bg-black/50 border-white/10 text-white focus:border-primary/50" />
             </div>
             
-            {state?.error && (
-              <div className="text-sm text-red-500 font-medium text-center bg-red-500/10 py-2 rounded-md border border-red-500/20">
-                {state.error}
-              </div>
-            )}
+            {/* Error handling removed; adjust as needed */}
             
             <button 
               type="submit" 
-              disabled={pending}
               className="w-full rounded-md bg-primary px-4 py-2.5 text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] mt-4"
             >
               {pending ? "Autenticando..." : "Iniciar Sesión"}
