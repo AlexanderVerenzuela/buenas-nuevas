@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search, Save } from "lucide-react"
-import { AttendanceStatus } from "@prisma/client"
+import { type AttendanceStatus } from "@prisma/client"
 import { bulkSaveAttendance } from "@/actions/attendance"
 import { normalizeText } from "@/lib/utils"
 
@@ -61,7 +61,7 @@ export function AttendanceTableClient({
       const updatedState = { ...localAttendance }
       initialYouthList.forEach(youth => {
         if (!updatedState[youth.id]) {
-          updatedState[youth.id] = AttendanceStatus.ABSENT
+          updatedState[youth.id] = "ABSENT" as AttendanceStatus
         }
       })
       setLocalAttendance(updatedState)
@@ -135,7 +135,7 @@ export function AttendanceTableClient({
                         size="sm" 
                         variant={status === 'PRESENT' ? 'default' : 'outline'} 
                         className={status === 'PRESENT' ? "bg-green-600 hover:bg-green-700 text-white" : "hover:bg-green-50"}
-                        onClick={() => handleMark(youth.id, AttendanceStatus.PRESENT)}
+                        onClick={() => handleMark(youth.id, "PRESENT" as AttendanceStatus)}
                       >
                         Presente
                       </Button>
@@ -143,7 +143,7 @@ export function AttendanceTableClient({
                         size="sm" 
                         variant={status === 'ABSENT' ? 'default' : 'outline'} 
                         className={status === 'ABSENT' ? "bg-red-600 hover:bg-red-700 text-white" : "hover:bg-red-50"}
-                        onClick={() => handleMark(youth.id, AttendanceStatus.ABSENT)}
+                        onClick={() => handleMark(youth.id, "ABSENT" as AttendanceStatus)}
                       >
                         Faltó
                       </Button>
