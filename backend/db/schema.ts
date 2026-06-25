@@ -1,6 +1,6 @@
 import { pgTable, text, timestamp, boolean, unique, primaryKey } from "drizzle-orm/pg-core"
 import { relations } from "drizzle-orm"
-import { createId } from "@paralleldrive/cuid2"
+import { randomUUID } from "crypto"
 
 // Enums
 export const roleEnum = ['ADMIN', 'LEADER', 'VIEWER'] as const;
@@ -10,8 +10,8 @@ export const meetingTypeEnum = ['GENERAL', 'DISCIPLESHIP', 'CELL_GROUP', 'SPECIA
 export const meetingStatusEnum = ['SCHEDULED', 'COMPLETED', 'CANCELLED'] as const;
 export const attendanceStatusEnum = ['PRESENT', 'ABSENT', 'LATE', 'EXCUSED', 'VISITOR'] as const;
 
-// Helper for CUID
-const cuid = () => createId();
+// Helper for UUID (formerly CUID)
+const cuid = () => randomUUID();
 
 // Tables
 export const users = pgTable('User', {
