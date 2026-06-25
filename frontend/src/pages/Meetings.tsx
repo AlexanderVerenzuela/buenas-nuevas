@@ -6,11 +6,15 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Link } from "react-router-dom"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
-import { MoreVertical, Trash2, CalendarDays, MapPin, Users, Mic, BookOpen, Clapperboard, Footprints, Sparkles } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { MoreVertical, Trash2, CalendarDays, MapPin, Users, Mic, BookOpen, Clapperboard, Footprints, Sparkles, Edit2 } from "lucide-react"
 import { getImageUrl } from '../lib/utils';
 
 const typeMap: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
   GENERAL: { label: "Normal (Culto)", icon: <Mic className="w-3.5 h-3.5" />, color: "bg-blue-500/10 text-blue-400 border-blue-500/20" },
+  CINE: { label: "Cine", icon: <Clapperboard className="w-3.5 h-3.5" />, color: "bg-purple-500/10 text-purple-400 border-purple-500/20" },
+  SALIDA_EVANGELISTICA: { label: "Salida Evangelística", icon: <Footprints className="w-3.5 h-3.5" />, color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
+  OTRO: { label: "Otro", icon: <Sparkles className="w-3.5 h-3.5" />, color: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
   DISCIPLESHIP: { label: "Discipulado", icon: <BookOpen className="w-3.5 h-3.5" />, color: "bg-purple-500/10 text-purple-400 border-purple-500/20" },
   CELL_GROUP: { label: "Célula", icon: <Users className="w-3.5 h-3.5" />, color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
   SPECIAL_EVENT: { label: "Evento Especial", icon: <Sparkles className="w-3.5 h-3.5" />, color: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
@@ -33,6 +37,23 @@ export default function Meetings() {
   const [meetings, setMeetings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { request } = useApi();
+  const [selectedMeeting, setSelectedMeeting] = useState<any>(null);
+  const [attendanceList, setAttendanceList] = useState<any[]>([]);
+  const [loadingAttendance, setLoadingAttendance] = useState(false);
+  const [editingMeeting, setEditingMeeting] = useState<any>(null);
+
+  const handleViewDetails = async (meeting: any) => {
+    setSelectedMeeting(meeting);
+    setLoadingAttendance(true);
+    try {
+      const data = await request(`/meetings/${meeting.id}/attendance`);
+      setAttendanceList(data || []);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoadingAttendance(false);
+    }
+  };
 
   const fetchMeetings = async () => {
     try {
@@ -138,12 +159,13 @@ export default function Meetings() {
                           <img 
                             src={getImageUrl(meeting.photoUrl)} 
                             alt="" 
-                            className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                            className="w-10 h-10 rounded-lg object-cover flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() => handleViewDetails(meeting)}
                             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
                           />
                         )}
                         <div>
-                          <div className="font-medium">{meeting.title}</div>
+                          <div className="font-medium cursor-pointer hover:underline text-primary transition-colors" onClick={() => handleViewDetails(meeting)}>{meeting.title}</div>
                           {meeting.location && (
                             <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                               <MapPin className="w-3 h-3" /> {meeting.location}
@@ -209,7 +231,12 @@ export default function Meetings() {
                             <MoreVertical className="h-4 w-4" />
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-36 p-1">
-                            <MeetingForm isDropdownItem onSubmit={(data) => handleEdit(meeting.id, data)} initialData={meeting} />
+                            <DropdownMenuItem
+                              onClick={() => setEditingMeeting(meeting)}
+                              className="cursor-pointer"
+                            >
+                              <Edit2 className="w-4 h-4 mr-2" /> Editar
+                            </DropdownMenuItem>
                             <DropdownMenuItem 
                               onClick={() => handleDelete(meeting.id)} 
                               className="text-red-500 focus:text-red-600 focus:bg-red-500/10 cursor-pointer"
@@ -239,13 +266,14 @@ export default function Meetings() {
             const sMap = statusMap[meeting.status as keyof typeof statusMap] || statusMap.SCHEDULED
             const tMap = typeMap[meeting.type as keyof typeof typeMap] || typeMap.GENERAL
             return (
-              <div key={meeting.id} className="rounded-xl border border-white/5 bg-card/40 backdrop-blur-xl shadow-lg overflow-hidden">
+              <div key={meeting.id} className="rounded-xl border border-white/5 bg-card/40 backdrop-blur-xl shadow-lg overflow-hidden animate-in fade-in duration-200">
                 {/* Photo banner */}
                 {meeting.photoUrl && (
                   <img 
                     src={getImageUrl(meeting.photoUrl)} 
                     alt="" 
-                    className="w-full h-28 object-cover"
+                    className="w-full h-28 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                    onClick={() => handleViewDetails(meeting)}
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
                   />
                 )}
@@ -254,7 +282,7 @@ export default function Meetings() {
                   {/* Header row */}
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <h3 className="font-semibold text-base truncate">{meeting.title}</h3>
+                      <h3 className="font-semibold text-base truncate cursor-pointer hover:underline text-primary" onClick={() => handleViewDetails(meeting)}>{meeting.title}</h3>
                       <div className="flex flex-wrap items-center gap-2 mt-1.5">
                         <Badge variant="outline" className={`${tMap.color} gap-1 text-[11px]`}>
                           {tMap.icon} {tMap.label}
@@ -269,7 +297,12 @@ export default function Meetings() {
                         <MoreVertical className="h-4 w-4" />
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-36 p-1">
-                        <MeetingForm isDropdownItem onSubmit={(data) => handleEdit(meeting.id, data)} initialData={meeting} />
+                        <DropdownMenuItem
+                          onClick={() => setEditingMeeting(meeting)}
+                          className="cursor-pointer"
+                        >
+                          <Edit2 className="w-4 h-4 mr-2" /> Editar
+                        </DropdownMenuItem>
                         <DropdownMenuItem 
                           onClick={() => handleDelete(meeting.id)} 
                           className="text-red-500 focus:text-red-600 focus:bg-red-500/10 cursor-pointer"
@@ -281,37 +314,37 @@ export default function Meetings() {
                   </div>
 
                   {/* Info grid */}
-                  <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1.5">
+                  <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground" onClick={() => handleViewDetails(meeting)}>
+                    <div className="flex items-center gap-1.5 cursor-pointer">
                       <CalendarDays className="w-3.5 h-3.5 text-primary/60" />
                       <span>{new Date(meeting.date).toLocaleDateString('es', { day: '2-digit', month: 'short' })}</span>
                       {meeting.time && <span className="text-muted-foreground/60">• {meeting.time}</span>}
                     </div>
                     {meeting.location && (
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 cursor-pointer">
                         <MapPin className="w-3.5 h-3.5 text-primary/60" />
                         <span className="truncate">{meeting.location}</span>
                       </div>
                     )}
                     {meeting.preacher && (
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 cursor-pointer">
                         <Mic className="w-3.5 h-3.5 text-blue-400" />
                         <span className="truncate">{meeting.preacher}</span>
                       </div>
                     )}
                     {meeting.preachingTheme && (
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 cursor-pointer">
                         <BookOpen className="w-3.5 h-3.5 text-purple-400" />
                         <span className="truncate">{meeting.preachingTheme}</span>
                       </div>
                     )}
                     {meeting.subType && (
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 cursor-pointer">
                         {subTypeMap[meeting.subType]?.icon || <Sparkles className="w-3.5 h-3.5" />}
                         <span>{subTypeMap[meeting.subType]?.label || meeting.subType}</span>
                       </div>
                     )}
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 cursor-pointer">
                       <Users className="w-3.5 h-3.5 text-primary/60" />
                       <span>{meeting._count?.attendances || 0} asistencias</span>
                     </div>
@@ -319,7 +352,7 @@ export default function Meetings() {
 
                   {/* Meeting notes */}
                   {meeting.meetingNotes && (
-                    <p className="text-xs text-muted-foreground/80 bg-muted/20 rounded-lg p-2 line-clamp-2">
+                    <p className="text-xs text-muted-foreground/80 bg-muted/20 rounded-lg p-2 line-clamp-2 cursor-pointer" onClick={() => handleViewDetails(meeting)}>
                       {meeting.meetingNotes}
                     </p>
                   )}
@@ -336,6 +369,185 @@ export default function Meetings() {
           })
         )}
       </div>
+
+      {/* Visual, non-editable meeting details and attendance statistics Dialog */}
+      <Dialog open={!!selectedMeeting} onOpenChange={(open) => !open && setSelectedMeeting(null)}>
+        <DialogContent className="max-w-[95vw] sm:max-w-[600px] max-h-[90vh] overflow-y-auto border-border/50 bg-card/95 backdrop-blur-xl scrollbar-thin p-6">
+          {selectedMeeting && (
+            <div className="space-y-6">
+              <div className="flex flex-col gap-4">
+                {selectedMeeting.photoUrl && (
+                  <div className="relative w-full h-48 rounded-xl overflow-hidden shadow-lg border border-white/10">
+                    <img src={getImageUrl(selectedMeeting.photoUrl)} alt={selectedMeeting.title} className="w-full h-full object-cover" />
+                  </div>
+                )}
+                <div>
+                  <DialogTitle className="text-2xl font-bold tracking-tight text-foreground">{selectedMeeting.title}</DialogTitle>
+                  <p className="text-xs text-muted-foreground mt-1">Detalles de la reunión y resumen de asistencia</p>
+                </div>
+              </div>
+
+              {/* Info Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl border border-white/5 bg-muted/10 text-sm">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <CalendarDays className="w-4 h-4 text-primary" />
+                    <div>
+                      <div className="text-xs font-semibold text-foreground">Fecha y Hora</div>
+                      <div>{new Date(selectedMeeting.date).toLocaleDateString('es', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}</div>
+                      {selectedMeeting.time && <div className="text-xs text-muted-foreground">{selectedMeeting.time}</div>}
+                    </div>
+                  </div>
+                  {selectedMeeting.location && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <MapPin className="w-4 h-4 text-primary" />
+                      <div>
+                        <div className="text-xs font-semibold text-foreground">Lugar</div>
+                        <div>{selectedMeeting.location}</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <div className="text-xs font-semibold text-foreground">Tipo de Reunión</div>
+                    <div className="mt-1">
+                      <Badge variant="outline" className={`${typeMap[selectedMeeting.type]?.color || 'bg-muted/50'} gap-1 text-xs`}>
+                        {typeMap[selectedMeeting.type]?.icon || <Sparkles className="w-3.5 h-3.5" />} {typeMap[selectedMeeting.type]?.label || selectedMeeting.type}
+                      </Badge>
+                    </div>
+                  </div>
+                  {selectedMeeting.preacher && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Mic className="w-4 h-4 text-blue-400" />
+                      <div>
+                        <div className="text-xs font-semibold text-foreground">Predicador</div>
+                        <div>{selectedMeeting.preacher}</div>
+                      </div>
+                    </div>
+                  )}
+                  {selectedMeeting.preachingTheme && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <BookOpen className="w-4 h-4 text-purple-400" />
+                      <div>
+                        <div className="text-xs font-semibold text-foreground">Tema</div>
+                        <div>{selectedMeeting.preachingTheme}</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {selectedMeeting.meetingNotes && (
+                <div className="space-y-1.5">
+                  <h4 className="text-sm font-semibold text-foreground">Notas de la Reunión</h4>
+                  <p className="text-xs text-muted-foreground bg-muted/20 p-3 rounded-lg border border-white/5 whitespace-pre-wrap">
+                    {selectedMeeting.meetingNotes}
+                  </p>
+                </div>
+              )}
+
+              {/* Attendance section */}
+              <div className="space-y-4 pt-4 border-t border-white/5">
+                <h4 className="text-base font-semibold text-foreground flex items-center justify-between">
+                  <span>Asistencia</span>
+                  {loadingAttendance && <span className="text-xs font-normal text-muted-foreground animate-pulse">Cargando lista...</span>}
+                </h4>
+
+                {!loadingAttendance && (
+                  <>
+                    {(() => {
+                      const present = attendanceList.filter(y => y.attendances[0]?.status === 'PRESENT');
+                      const absent = attendanceList.filter(y => y.attendances[0]?.status !== 'PRESENT');
+                      const total = attendanceList.length;
+                      const percentage = total > 0 ? Math.round((present.length / total) * 100) : 0;
+
+                      return (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-3 gap-3">
+                            <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-3 text-center">
+                              <div className="text-2xl font-bold text-green-400">{present.length}</div>
+                              <div className="text-[10px] sm:text-xs text-green-400/80 font-medium">Asistieron</div>
+                            </div>
+                            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-center">
+                              <div className="text-2xl font-bold text-red-400">{absent.length}</div>
+                              <div className="text-[10px] sm:text-xs text-red-400/80 font-medium">Faltaron</div>
+                            </div>
+                            <div className="bg-primary/10 border border-primary/20 rounded-xl p-3 text-center">
+                              <div className="text-2xl font-bold text-primary">{percentage}%</div>
+                              <div className="text-[10px] sm:text-xs text-primary/80 font-medium">Asistencia</div>
+                            </div>
+                          </div>
+
+                          {/* Progress bar */}
+                          <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                            <div className="bg-green-500 h-full transition-all duration-500" style={{ width: `${percentage}%` }} />
+                          </div>
+
+                          {/* Columns */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {/* Attended list */}
+                            <div className="border border-white/5 bg-card/30 rounded-xl p-3">
+                              <div className="text-xs font-semibold text-green-400 border-b border-white/5 pb-1.5 mb-2 flex justify-between">
+                                <span>ASISTIERON</span>
+                                <span className="bg-green-500/20 px-1.5 py-0.5 rounded text-[10px]">{present.length}</span>
+                              </div>
+                              <div className="max-h-[160px] overflow-y-auto scrollbar-thin text-xs space-y-1.5 pr-1">
+                                {present.length === 0 ? (
+                                  <div className="text-muted-foreground/50 py-4 text-center">Nadie registrado</div>
+                                ) : (
+                                  present.map(y => (
+                                    <div key={y.id} className="py-1 px-1.5 hover:bg-white/5 rounded text-muted-foreground flex items-center justify-between">
+                                      <span>{y.firstName} {y.lastName}</span>
+                                    </div>
+                                  ))
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Absent list */}
+                            <div className="border border-white/5 bg-card/30 rounded-xl p-3">
+                              <div className="text-xs font-semibold text-red-400 border-b border-white/5 pb-1.5 mb-2 flex justify-between">
+                                <span>FALTARON</span>
+                                <span className="bg-red-500/20 px-1.5 py-0.5 rounded text-[10px]">{absent.length}</span>
+                              </div>
+                              <div className="max-h-[160px] overflow-y-auto scrollbar-thin text-xs space-y-1.5 pr-1">
+                                {absent.length === 0 ? (
+                                  <div className="text-muted-foreground/50 py-4 text-center">Nadie registrado</div>
+                                ) : (
+                                  absent.map(y => (
+                                    <div key={y.id} className="py-1 px-1.5 hover:bg-white/5 rounded text-muted-foreground">
+                                      {y.firstName} {y.lastName}
+                                    </div>
+                                  ))
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+      {/* Standalone edit form - rendered outside DropdownMenu to avoid focus-trap conflicts */}
+      {editingMeeting && (
+        <MeetingForm
+          initialData={editingMeeting}
+          forceOpen
+          onClose={() => setEditingMeeting(null)}
+          onSubmit={async (data) => {
+            const ok = await handleEdit(editingMeeting.id, data);
+            if (ok) setEditingMeeting(null);
+            return ok;
+          }}
+        />
+      )}
     </div>
   )
 }

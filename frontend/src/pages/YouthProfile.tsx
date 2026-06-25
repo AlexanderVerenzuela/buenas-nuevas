@@ -91,10 +91,10 @@ export default function YouthProfile() {
               {getImageUrl(profile.avatarUrl) ? (
                 <Dialog>
                   <DialogTrigger render={<div className="cursor-pointer w-full h-full relative block" />}>
-                      <img src={getImageUrl(profile.avatarUrl)} alt="Avatar" className="w-full h-full object-cover aspect-square transition-transform group-hover:scale-105 duration-300" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
-                        <ZoomIn className="w-6 h-6 text-white" />
-                      </div>
+                    <img src={getImageUrl(profile.avatarUrl)} alt="Avatar" className="w-full h-full object-cover aspect-square transition-transform group-hover:scale-105 duration-300" />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
+                      <ZoomIn className="w-6 h-6 text-white" />
+                    </div>
                   </DialogTrigger>
                   <DialogContent className="max-w-3xl bg-transparent border-none shadow-none flex items-center justify-center p-0">
                     <img src={getImageUrl(profile.avatarUrl)} alt="Avatar Zoom" className="w-full h-auto max-h-[85vh] object-contain rounded-lg shadow-2xl" />

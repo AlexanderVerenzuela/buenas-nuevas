@@ -6,7 +6,7 @@ import { randomUUID } from "crypto"
 export const roleEnum = ['ADMIN', 'LEADER', 'VIEWER'] as const;
 export const youthStatusEnum = ['VISITOR', 'NEW', 'MEMBER', 'LEADER', 'INACTIVE', 'COMMISSION', 'PREACHING', 'FAMILY'] as const;
 export const discipleshipStatusEnum = ['NOT_STARTED', 'IN_PROGRESS', 'COMPLETED'] as const;
-export const meetingTypeEnum = ['GENERAL', 'DISCIPLESHIP', 'CELL_GROUP', 'SPECIAL_EVENT', 'CAMP'] as const;
+export const meetingTypeEnum = ['GENERAL', 'DISCIPLESHIP', 'CELL_GROUP', 'SPECIAL_EVENT', 'CAMP', 'CINE', 'SALIDA_EVANGELISTICA', 'OTRO'] as const;
 export const meetingStatusEnum = ['SCHEDULED', 'COMPLETED', 'CANCELLED'] as const;
 export const attendanceStatusEnum = ['PRESENT', 'ABSENT', 'LATE', 'EXCUSED', 'VISITOR'] as const;
 
