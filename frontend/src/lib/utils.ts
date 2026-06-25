@@ -12,11 +12,6 @@ import { BACKEND_URL } from "./config"
 
 export function getImageUrl(url: string | null | undefined): string {
   if (!url) return "";
-  // En producción (Vercel serverless), los archivos locales en /uploads/ no existen.
-  // Devolvemos vacío para que los componentes usen sus fallbacks elegantes de forma limpia.
-  if (url.startsWith('/uploads/') && !import.meta.env.DEV) {
-    return "";
-  }
   if (url.startsWith('http') || url.startsWith('blob:') || url.startsWith('data:')) {
     return url;
   }
