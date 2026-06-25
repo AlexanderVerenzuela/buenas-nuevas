@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { useApi } from "../../hooks/useApi"
 import { Edit3, Upload, Image as ImageIcon } from "lucide-react"
+import { BACKEND_URL, API_URL } from "../../lib/config"
 
 export function EditYouthForm({ youth }: { youth: any }) {
   const [open, setOpen] = useState(false)
@@ -61,7 +62,7 @@ export function EditYouthForm({ youth }: { youth: any }) {
       try {
         const token = localStorage.getItem('token') || '';
         const tokenVal = token.replace(/['"]+/g, ''); // en caso que esté como string JSON
-        const uploadRes = await fetch('http://localhost:5000/api/upload', {
+        const uploadRes = await fetch(`${API_URL}/upload`, {
           method: 'POST',
           body: imgData,
           headers: {
@@ -129,7 +130,7 @@ export function EditYouthForm({ youth }: { youth: any }) {
             >
               <div className="w-24 h-24 rounded-full border-4 border-background shadow-md overflow-hidden bg-muted flex items-center justify-center relative group">
                 {photoPreview ? (
-                  <img src={photoPreview.startsWith('http') || photoPreview.startsWith('blob:') ? photoPreview : `http://localhost:5000${photoPreview}`} alt="Preview" className="w-full h-full aspect-square object-cover" />
+                  <img src={photoPreview.startsWith('http') || photoPreview.startsWith('blob:') ? photoPreview : `${BACKEND_URL}${photoPreview}`} alt="Preview" className="w-full h-full aspect-square object-cover" />
                 ) : (
                   <ImageIcon className="w-8 h-8 text-muted-foreground" />
                 )}

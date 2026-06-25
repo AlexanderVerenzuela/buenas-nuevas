@@ -7,18 +7,19 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { Upload, Image as ImageIcon, Edit2, Plus } from "lucide-react"
+import { BACKEND_URL, API_URL } from "../../lib/config"
 
 export function MeetingForm({ onSubmit, initialData }: { onSubmit: (data: any) => Promise<boolean>, initialData?: any }) {
   const [open, setOpen] = useState(false)
   const [pending, setPending] = useState(false)
   
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [photoPreview, setPhotoPreview] = useState<string | null>(initialData?.photoUrl ? (initialData.photoUrl.startsWith('http') ? initialData.photoUrl : `http://localhost:5000${initialData.photoUrl}`) : null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(initialData?.photoUrl ? (initialData.photoUrl.startsWith('http') ? initialData.photoUrl : `${BACKEND_URL}${initialData.photoUrl}`) : null)
   const [photoFile, setPhotoFile] = useState<File | null>(null)
 
   useEffect(() => {
     if (open && initialData) {
-      setPhotoPreview(initialData?.photoUrl ? (initialData.photoUrl.startsWith('http') ? initialData.photoUrl : `http://localhost:5000${initialData.photoUrl}`) : null)
+      setPhotoPreview(initialData?.photoUrl ? (initialData.photoUrl.startsWith('http') ? initialData.photoUrl : `${BACKEND_URL}${initialData.photoUrl}`) : null)
       setPhotoFile(null)
     } else if (open && !initialData) {
       setPhotoPreview(null)
@@ -47,7 +48,7 @@ export function MeetingForm({ onSubmit, initialData }: { onSubmit: (data: any) =
       try {
         const token = localStorage.getItem('token') || '';
         const tokenVal = token.replace(/['"]+/g, '');
-        const uploadRes = await fetch('http://localhost:5000/api/upload', {
+        const uploadRes = await fetch(`${API_URL}/upload`, {
           method: 'POST',
           body: imgData,
           headers: {

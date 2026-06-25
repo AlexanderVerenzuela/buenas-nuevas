@@ -1,6 +1,5 @@
 import { useAuth } from '../contexts/AuthContext';
-
-const API_URL = 'http://localhost:5000/api';
+import { API_URL } from '../lib/config';
 
 // Caché global en memoria para evitar parpadeos al cambiar de pestañas
 const cache = new Map<string, { data: any, timestamp: number }>();
