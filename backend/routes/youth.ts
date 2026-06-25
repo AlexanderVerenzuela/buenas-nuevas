@@ -79,6 +79,7 @@ router.post('/', async (req, res) => {
       phone: phone || null,
       email: email || null,
       status: status || 'VISITOR',
+      updatedAt: new Date(),
     }).returning();
 
     const newYouth = newYouthArray[0];

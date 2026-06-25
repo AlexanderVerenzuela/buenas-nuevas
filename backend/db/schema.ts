@@ -21,8 +21,8 @@ export const users = pgTable('User', {
   name: text('name'),
   role: text('role', { enum: roleEnum }).default('VIEWER').notNull(),
   isActive: boolean('isActive').default(true).notNull(),
-  createdAt: timestamp('createdAt', { mode: 'date' }).$defaultFn(() => new Date()).notNull(),
-  updatedAt: timestamp('updatedAt', { mode: 'date' }).$defaultFn(() => new Date()).$onUpdate(() => new Date()).notNull(),
+  createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().$onUpdate(() => new Date()).notNull(),
 });
 
 export const leaders = pgTable('Leader', {
@@ -73,8 +73,8 @@ export const youths = pgTable('Youth', {
   isActive: boolean('isActive').default(true).notNull(),
   leaderId: text('leaderId').references(() => leaders.id, { onDelete: 'set null' }),
   groupId: text('groupId'), // references DiscipleshipGroup
-  createdAt: timestamp('createdAt', { mode: 'date' }).$defaultFn(() => new Date()).notNull(),
-  updatedAt: timestamp('updatedAt', { mode: 'date' }).$defaultFn(() => new Date()).$onUpdate(() => new Date()).notNull(),
+  createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow(),
 });
 
 export const discipleshipGroups = pgTable('DiscipleshipGroup', {

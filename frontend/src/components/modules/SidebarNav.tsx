@@ -1,9 +1,15 @@
 "use client"
 
 import { Link, useLocation } from "react-router-dom"
-import { Home, Users, UserCog, Users2, CalendarDays, FileBarChart, Gift } from "lucide-react"
+import { Home, Users, Users2, CalendarDays, FileBarChart, Gift, LucideIcon } from "lucide-react"
 
-const navItems = [
+interface NavItem {
+  href: string
+  label: string
+  icon: LucideIcon
+}
+
+const navItems: NavItem[] = [
   { href: "/", label: "Dashboard", icon: Home },
   { href: "/youth", label: "Jóvenes", icon: Users },
   { href: "/groups", label: "Grupos", icon: Users2 },
@@ -31,7 +37,7 @@ export function SidebarNav() {
       <div className="flex-1 px-4 py-6 overflow-y-auto">
         <p className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">Principal</p>
         <nav className="space-y-1.5">
-        {navItems.map((item) => {
+        {navItems.map((item: NavItem) => {
           const isActive = item.href === "/" 
             ? pathname === "/" 
             : pathname.startsWith(item.href)
