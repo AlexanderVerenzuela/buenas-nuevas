@@ -5,10 +5,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Link } from "react-router-dom"
-import { ArrowUpDown, Settings, ArrowUp, ArrowDown, Search } from "lucide-react"
+import { ArrowUpDown, Settings, ArrowUp, ArrowDown, Search, MoreVertical } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { normalizeText } from "@/lib/utils"
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
+import { normalizeText, getImageUrl } from "@/lib/utils"
 
 const statusMap = {
   VISITOR: { label: "Visita", color: "bg-accent text-muted-foreground" },
@@ -181,10 +182,22 @@ export function YouthTableClient({ initialData, onDelete }: { initialData: any[]
               const badgeInfo = statusMap[youth.status as keyof typeof statusMap] || statusMap.VISITOR
               return (
                 <TableRow key={youth.id}>
-                  <TableCell className="font-medium text-foreground">
-                    <Link to={`/youth/${youth.id}`} state={{ profile: youth }} className="hover:underline hover:text-primary transition-colors">
-                      {youth.firstName} {youth.lastName}
-                    </Link>
+                  <TableCell className="font-medium text-foreground py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full overflow-hidden bg-muted flex items-center justify-center border border-white/10 flex-shrink-0">
+                        {getImageUrl(youth.avatarUrl) ? (
+                          <img src={getImageUrl(youth.avatarUrl)} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-500/20 to-purple-500/20 text-indigo-400 text-xs font-bold uppercase">
+                            {youth.firstName[0]}
+                            {youth.lastName ? youth.lastName[0] : ''}
+                          </div>
+                        )}
+                      </div>
+                      <Link to={`/youth/${youth.id}`} state={{ profile: youth }} className="hover:underline hover:text-primary transition-colors truncate block max-w-[120px] xs:max-w-[150px] sm:max-w-none">
+                        {youth.firstName} {youth.lastName}
+                      </Link>
+                    </div>
                   </TableCell>
                   <TableCell>
                     <Badge variant="secondary" className={badgeInfo.color}>
@@ -196,17 +209,29 @@ export function YouthTableClient({ initialData, onDelete }: { initialData: any[]
                   <TableCell className="hidden lg:table-cell">
                     {youth.leader ? `${youth.leader.firstName} ${youth.leader.lastName}` : <span className="text-muted-foreground">Sin asignar</span>}
                   </TableCell>
-                  <TableCell className="text-right flex items-center justify-end gap-2">
-                    <Link to={`/youth/${youth.id}`} state={{ profile: youth }}>
-                      <Button variant="outline" size="sm" className="bg-card hover:bg-accent hover:text-accent-foreground">Ver Perfil</Button>
-                    </Link>
-                    <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-100" onClick={() => {
-                      if(confirm("¿Estás seguro de eliminar a este joven?")) {
-                        onDelete(youth.id)
-                      }
-                    }}>
-                      Eliminar
-                    </Button>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" className="h-7 w-7" />}>
+                        <MoreVertical className="h-4 w-4" />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-36">
+                        <Link to={`/youth/${youth.id}`} state={{ profile: youth }}>
+                          <DropdownMenuItem className="cursor-pointer">
+                            Ver Perfil
+                          </DropdownMenuItem>
+                        </Link>
+                        <DropdownMenuItem 
+                          onClick={() => {
+                            if(confirm("¿Estás seguro de eliminar a este joven?")) {
+                              onDelete(youth.id)
+                            }
+                          }}
+                          className="text-red-500 focus:text-red-600 focus:bg-red-500/10 cursor-pointer"
+                        >
+                          Eliminar
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               )

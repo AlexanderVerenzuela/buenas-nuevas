@@ -5,6 +5,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Link } from "react-router-dom"
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
+import { MoreVertical, Trash2 } from "lucide-react"
 
 const typeMap = {
   GENERAL: "General",
@@ -121,8 +123,9 @@ export default function Meetings() {
                     <TableCell className="hidden sm:table-cell">
                       {typeMap[meeting.type as keyof typeof typeMap]}
                     </TableCell>
-                    <TableCell>
-                      {new Date(meeting.date).toLocaleDateString()} {meeting.time && `a las ${meeting.time}`}
+                    <TableCell className="text-sm">
+                      <div>{new Date(meeting.date).toLocaleDateString(undefined, { day: '2-digit', month: '2-digit', year: '2-digit' })}</div>
+                      {meeting.time && <div className="text-xs text-muted-foreground">{meeting.time}</div>}
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       <Badge variant="secondary" className={sMap.color}>
@@ -132,14 +135,26 @@ export default function Meetings() {
                     <TableCell className="hidden lg:table-cell">
                       {meeting._count?.attendances || 0} registros
                     </TableCell>
-                    <TableCell className="text-right space-x-2">
-                      <Link to={`/meetings/${meeting.id}/attendance`}>
-                        <Button variant="outline" size="sm" className="bg-card hover:bg-accent">Pasar Lista</Button>
-                      </Link>
-                      <MeetingForm onSubmit={(data) => handleEdit(meeting.id, data)} initialData={meeting} />
-                      <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-500/10" onClick={() => handleDelete(meeting.id)}>
-                        Eliminar
-                      </Button>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Link to={`/meetings/${meeting.id}/attendance`}>
+                          <Button variant="outline" size="sm" className="h-7 px-2.5 text-xs bg-card">Pasar Lista</Button>
+                        </Link>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" className="h-7 w-7" />}>
+                            <MoreVertical className="h-4 w-4" />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-36 p-1">
+                            <MeetingForm isDropdownItem onSubmit={(data) => handleEdit(meeting.id, data)} initialData={meeting} />
+                            <DropdownMenuItem 
+                              onClick={() => handleDelete(meeting.id)} 
+                              className="text-red-500 focus:text-red-600 focus:bg-red-500/10 cursor-pointer"
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" /> Eliminar
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </TableCell>
                   </TableRow>
                 )

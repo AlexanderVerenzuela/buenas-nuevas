@@ -10,7 +10,7 @@ import { Upload, Image as ImageIcon, Edit2, Plus } from "lucide-react"
 import { API_URL } from "../../lib/config"
 import { getImageUrl, compressImage } from "../../lib/utils"
 
-export function MeetingForm({ onSubmit, initialData }: { onSubmit: (data: any) => Promise<boolean>, initialData?: any }) {
+export function MeetingForm({ onSubmit, initialData, isDropdownItem }: { onSubmit: (data: any) => Promise<boolean>, initialData?: any, isDropdownItem?: boolean }) {
   const [open, setOpen] = useState(false)
   const [pending, setPending] = useState(false)
   
@@ -92,14 +92,18 @@ export function MeetingForm({ onSubmit, initialData }: { onSubmit: (data: any) =
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          initialData ? (
+          isDropdownItem ? (
+            <Button variant="ghost" className="w-full justify-start gap-2 h-9 px-3 text-sm font-normal text-foreground hover:bg-accent hover:text-accent-foreground rounded-md border-none cursor-pointer focus:bg-accent focus:text-accent-foreground" />
+          ) : initialData ? (
             <Button variant="ghost" size="sm" className="text-blue-500 hover:text-blue-600 hover:bg-blue-500/10 h-8 px-2" />
           ) : (
             <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 rounded-xl" />
           )
         }
       >
-        {initialData ? (
+        {isDropdownItem ? (
+          <><Edit2 className="w-4 h-4" /> Editar</>
+        ) : initialData ? (
           <><Edit2 className="w-4 h-4 mr-1" /> Editar</>
         ) : (
           <><Plus className="w-4 h-4 mr-2" /> Nueva Reunión</>
