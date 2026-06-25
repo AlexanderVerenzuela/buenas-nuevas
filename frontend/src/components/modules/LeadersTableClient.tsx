@@ -80,24 +80,24 @@ export function LeadersTableClient({ initialData, onDelete }: { initialData: any
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         </div>
       </div>
-      <div className="rounded-md border border-border bg-card/50 backdrop-blur-md">
+      <div className="rounded-md border border-border bg-card/50 backdrop-blur-md overflow-x-auto">
         <Table>
         <TableHeader>
           <TableRow>
             <TableHead className="cursor-pointer hover:bg-accent/50" onClick={() => requestSort('name')}>
               <div className="flex items-center gap-2">Nombre <ArrowUpDown className="h-4 w-4" /></div>
             </TableHead>
-            <TableHead className="cursor-pointer hover:bg-accent/50" onClick={() => requestSort('group')}>
+            <TableHead className="hidden sm:table-cell cursor-pointer hover:bg-accent/50" onClick={() => requestSort('group')}>
               <div className="flex items-center gap-2">Grupo de Discipulado <ArrowUpDown className="h-4 w-4" /></div>
             </TableHead>
             <TableHead className="cursor-pointer hover:bg-accent/50" onClick={() => requestSort('youthCount')}>
               <div className="flex items-center gap-2">Jóvenes a Cargo <ArrowUpDown className="h-4 w-4" /></div>
             </TableHead>
-            <TableHead>Teléfono</TableHead>
-            <TableHead className="cursor-pointer hover:bg-accent/50" onClick={() => requestSort('birthDate')}>
+            <TableHead className="hidden md:table-cell">Teléfono</TableHead>
+            <TableHead className="hidden lg:table-cell cursor-pointer hover:bg-accent/50" onClick={() => requestSort('birthDate')}>
               <div className="flex items-center gap-2">Cumpleaños <ArrowUpDown className="h-4 w-4" /></div>
             </TableHead>
-            <TableHead className="cursor-pointer hover:bg-accent/50" onClick={() => requestSort('isActive')}>
+            <TableHead className="hidden sm:table-cell cursor-pointer hover:bg-accent/50" onClick={() => requestSort('isActive')}>
               <div className="flex items-center gap-2">Estado <ArrowUpDown className="h-4 w-4" /></div>
             </TableHead>
             <TableHead className="text-right">Acciones</TableHead>
@@ -106,7 +106,7 @@ export function LeadersTableClient({ initialData, onDelete }: { initialData: any
         <TableBody>
           {sortedData.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
+              <TableCell colSpan={7} className="text-center h-24 text-muted-foreground">
                 No hay líderes registrados.
               </TableCell>
             </TableRow>
@@ -116,15 +116,15 @@ export function LeadersTableClient({ initialData, onDelete }: { initialData: any
                 <TableCell className="font-medium">
                   {leader.firstName} {leader.lastName}
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden sm:table-cell">
                   {leader.discipleshipGroup ? leader.discipleshipGroup.name : <span className="text-muted-foreground">Sin grupo</span>}
                 </TableCell>
                 <TableCell>
                   <Badge variant="outline">{leader._count.assignedYouth} jóvenes</Badge>
                 </TableCell>
-                <TableCell>{leader.phone || "-"}</TableCell>
-                <TableCell>{leader.birthDate ? leader.birthDate.split('T')[0].split('-').reverse().join('/') : "-"}</TableCell>
-                <TableCell>
+                <TableCell className="hidden md:table-cell">{leader.phone || "-"}</TableCell>
+                <TableCell className="hidden lg:table-cell">{leader.birthDate ? leader.birthDate.split('T')[0].split('-').reverse().join('/') : "-"}</TableCell>
+                <TableCell className="hidden sm:table-cell">
                   {leader.isActive ? (
                     <Badge variant="secondary" className="bg-green-100 text-green-800">Activo</Badge>
                   ) : (

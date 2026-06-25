@@ -83,7 +83,7 @@ export default function Meetings() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
             Reuniones
@@ -93,15 +93,15 @@ export default function Meetings() {
         <MeetingForm onSubmit={handleCreate} />
       </div>
 
-      <div className="rounded-xl border border-white/5 bg-card/40 backdrop-blur-xl shadow-2xl overflow-hidden">
+      <div className="rounded-xl border border-white/5 bg-card/40 backdrop-blur-xl shadow-2xl overflow-x-auto">
         <Table>
           <TableHeader className="bg-muted/30">
             <TableRow>
               <TableHead>Título</TableHead>
-              <TableHead>Tipo</TableHead>
+              <TableHead className="hidden sm:table-cell">Tipo</TableHead>
               <TableHead>Fecha</TableHead>
-              <TableHead>Estado</TableHead>
-              <TableHead>Asistencias</TableHead>
+              <TableHead className="hidden md:table-cell">Estado</TableHead>
+              <TableHead className="hidden lg:table-cell">Asistencias</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
@@ -118,18 +118,18 @@ export default function Meetings() {
                 return (
                   <TableRow key={meeting.id}>
                     <TableCell className="font-medium">{meeting.title}</TableCell>
-                    <TableCell>
+                    <TableCell className="hidden sm:table-cell">
                       {typeMap[meeting.type as keyof typeof typeMap]}
                     </TableCell>
                     <TableCell>
                       {new Date(meeting.date).toLocaleDateString()} {meeting.time && `a las ${meeting.time}`}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden md:table-cell">
                       <Badge variant="secondary" className={sMap.color}>
                         {sMap.label}
                       </Badge>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden lg:table-cell">
                       {meeting._count?.attendances || 0} registros
                     </TableCell>
                     <TableCell className="text-right space-x-2">

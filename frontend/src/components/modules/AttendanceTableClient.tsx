@@ -124,13 +124,13 @@ export function AttendanceTableClient({
         </Button>
       </div>
 
-      <div className="rounded-xl border border-white/5 bg-card/40 backdrop-blur-xl shadow-2xl overflow-hidden">
+      <div className="rounded-xl border border-white/5 bg-card/40 backdrop-blur-xl shadow-2xl overflow-x-auto">
         <Table>
           <TableHeader className="bg-muted/30">
             <TableRow>
               <TableHead>Joven</TableHead>
-              <TableHead>Grupo</TableHead>
-              <TableHead>Estado Actual</TableHead>
+              <TableHead className="hidden sm:table-cell">Grupo</TableHead>
+              <TableHead className="hidden md:table-cell">Estado Actual</TableHead>
               <TableHead className="text-right">Marcar Asistencia</TableHead>
             </TableRow>
           </TableHeader>
@@ -148,8 +148,8 @@ export function AttendanceTableClient({
                 return (
                   <TableRow key={youth.id}>
                     <TableCell className="font-medium">{youth.firstName} {youth.lastName}</TableCell>
-                    <TableCell>{youth.group?.name || "-"}</TableCell>
-                    <TableCell>
+                    <TableCell className="hidden sm:table-cell">{youth.group?.name || "-"}</TableCell>
+                    <TableCell className="hidden md:table-cell">
                       {status ? (
                         <span className={`px-2 py-1 rounded text-xs font-medium ${
                           status === 'PRESENT' ? 'bg-green-100 text-green-800' : 

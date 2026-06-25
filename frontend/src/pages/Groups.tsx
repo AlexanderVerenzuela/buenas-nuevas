@@ -65,7 +65,7 @@ export default function Groups() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-foreground">Grupos de Discipulado</h2>
           <p className="text-sm text-muted-foreground">Administra los grupos pequeños y sus líderes.</p>
@@ -73,15 +73,15 @@ export default function Groups() {
         <GroupForm availableLeaders={leaders} onSubmit={handleCreate} />
       </div>
 
-      <div className="rounded-md border border-border bg-card/50 backdrop-blur-md">
+      <div className="rounded-md border border-border bg-card/50 backdrop-blur-md overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Nombre del Grupo</TableHead>
               <TableHead>Líder Principal</TableHead>
-              <TableHead>Horario</TableHead>
-              <TableHead>Lugar</TableHead>
-              <TableHead>Miembros</TableHead>
+              <TableHead className="hidden sm:table-cell">Horario</TableHead>
+              <TableHead className="hidden md:table-cell">Lugar</TableHead>
+              <TableHead className="hidden lg:table-cell">Miembros</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
@@ -99,17 +99,17 @@ export default function Groups() {
                   <TableCell>
                     {group.leader ? `${group.leader.firstName} ${group.leader.lastName}` : "Sin líder"}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden sm:table-cell">
                     {group.meetingDay && group.meetingTime 
                       ? `${group.meetingDay} - ${group.meetingTime}` 
                       : "-"}
                   </TableCell>
-                  <TableCell>{group.location || "-"}</TableCell>
-                  <TableCell>
+                  <TableCell className="hidden md:table-cell">{group.location || "-"}</TableCell>
+                  <TableCell className="hidden lg:table-cell">
                     <Badge variant="outline">{group._count?.members || 0} jóvenes</Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <button onClick={() => handleDelete(group.id)} className="text-sm text-red-600 hover:underline">
+                    <button onClick={() => handleDelete(group.id)} className="text-sm text-red-600 hover:underline cursor-pointer">
                       Eliminar
                     </button>
                   </TableCell>

@@ -150,7 +150,7 @@ export function EditYouthForm({ youth }: { youth: any }) {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="firstName">Nombres</Label>
                 <Input id="firstName" name="firstName" defaultValue={youth.firstName} required />
@@ -178,15 +178,15 @@ export function EditYouthForm({ youth }: { youth: any }) {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid gap-2 col-span-2">
+              <div className="grid gap-2 col-span-1 md:col-span-2">
                 <Label htmlFor="birthDate">Fecha de Nacimiento</Label>
                 <Input id="birthDate" name="birthDate" type="date" defaultValue={youth.birthDate ? new Date(youth.birthDate).toISOString().split('T')[0] : ""} />
               </div>
             </div>
 
             {/* Estudios y Trabajo */}
-            <div className="grid grid-cols-2 gap-4 border-t pt-4">
-              <div className="col-span-2 flex items-center gap-2 mb-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
+              <div className="col-span-1 md:col-span-2 flex items-center gap-2 mb-2">
                 <input type="checkbox" id="isStudying" name="isStudying" defaultChecked={youth.isStudying} className="rounded border-gray-300 text-primary focus:ring-primary" />
                 <Label htmlFor="isStudying" className="font-semibold text-base">¿Está estudiando?</Label>
               </div>
@@ -200,8 +200,8 @@ export function EditYouthForm({ youth }: { youth: any }) {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 border-t pt-4">
-              <div className="col-span-2 flex items-center gap-2 mb-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
+              <div className="col-span-1 md:col-span-2 flex items-center gap-2 mb-2">
                 <input type="checkbox" id="isWorking" name="isWorking" defaultChecked={youth.isWorking} className="rounded border-gray-300 text-primary focus:ring-primary" />
                 <Label htmlFor="isWorking" className="font-semibold text-base">¿Está trabajando?</Label>
               </div>

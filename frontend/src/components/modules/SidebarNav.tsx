@@ -1,7 +1,7 @@
 "use client"
 
 import { Link, useLocation } from "react-router-dom"
-import { Home, Users, Users2, CalendarDays, FileBarChart, Gift, LucideIcon } from "lucide-react"
+import { Home, Users, Users2, CalendarDays, FileBarChart, Gift, LucideIcon, X } from "lucide-react"
 
 interface NavItem {
   href: string
@@ -18,12 +18,14 @@ const navItems: NavItem[] = [
   { href: "/birthdays", label: "Cumpleaños", icon: Gift },
 ]
 
-export function SidebarNav() {
+export function SidebarNav({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => void }) {
   const pathname = useLocation().pathname
 
   return (
-    <aside className="fixed inset-y-0 left-0 w-64 bg-card/80 backdrop-blur-xl border-r border-white/5 flex flex-col z-50 shadow-2xl">
-      <div className="flex h-20 items-center px-8 border-b border-white/5">
+    <aside className={`fixed inset-y-0 left-0 w-64 bg-[#0a0a0b]/95 lg:bg-card/80 backdrop-blur-xl border-r border-white/5 flex flex-col z-50 shadow-2xl transition-transform duration-300 lg:translate-x-0 ${
+      isOpen ? 'translate-x-0' : '-translate-x-full'
+    }`}>
+      <div className="flex h-20 items-center justify-between px-8 border-b border-white/5">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
             <span className="font-bold text-white text-sm">BN</span>
@@ -32,6 +34,14 @@ export function SidebarNav() {
             Buenas Nuevas
           </span>
         </div>
+        {onClose && (
+          <button 
+            onClick={onClose}
+            className="lg:hidden p-1.5 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-white transition-all cursor-pointer"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
       </div>
       
       <div className="flex-1 px-4 py-6 overflow-y-auto">
@@ -48,6 +58,7 @@ export function SidebarNav() {
             <Link
               key={item.href}
               to={item.href}
+              onClick={onClose}
               className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all group relative overflow-hidden ${
                 isActive
                   ? "text-white"

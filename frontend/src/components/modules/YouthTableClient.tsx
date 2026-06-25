@@ -149,7 +149,7 @@ export function YouthTableClient({ initialData, onDelete }: { initialData: any[]
         </div>
         <StatusOrderConfig order={statusOrder} setOrder={setStatusOrder} />
       </div>
-      <div className="rounded-xl border border-white/5 bg-card/40 backdrop-blur-xl shadow-2xl overflow-hidden">
+      <div className="rounded-xl border border-white/5 bg-card/40 backdrop-blur-xl shadow-2xl overflow-x-auto">
         <Table>
         <TableHeader className="bg-muted/30">
           <TableRow>
@@ -159,11 +159,11 @@ export function YouthTableClient({ initialData, onDelete }: { initialData: any[]
             <TableHead className="cursor-pointer hover:bg-accent/50" onClick={() => requestSort('status')}>
               <div className="flex items-center gap-2">Estado <ArrowUpDown className="h-4 w-4" /></div>
             </TableHead>
-            <TableHead>Teléfono</TableHead>
-            <TableHead className="cursor-pointer hover:bg-accent/50" onClick={() => requestSort('birthDate')}>
+            <TableHead className="hidden sm:table-cell">Teléfono</TableHead>
+            <TableHead className="hidden md:table-cell cursor-pointer hover:bg-accent/50" onClick={() => requestSort('birthDate')}>
               <div className="flex items-center gap-2">Cumpleaños <ArrowUpDown className="h-4 w-4" /></div>
             </TableHead>
-            <TableHead className="cursor-pointer hover:bg-accent/50" onClick={() => requestSort('leader')}>
+            <TableHead className="hidden lg:table-cell cursor-pointer hover:bg-accent/50" onClick={() => requestSort('leader')}>
               <div className="flex items-center gap-2">Líder Asignado <ArrowUpDown className="h-4 w-4" /></div>
             </TableHead>
             <TableHead className="text-right">Acciones</TableHead>
@@ -172,7 +172,7 @@ export function YouthTableClient({ initialData, onDelete }: { initialData: any[]
         <TableBody>
           {sortedData.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
+              <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
                 No hay jóvenes registrados.
               </TableCell>
             </TableRow>
@@ -191,9 +191,9 @@ export function YouthTableClient({ initialData, onDelete }: { initialData: any[]
                       {badgeInfo.label}
                     </Badge>
                   </TableCell>
-                  <TableCell>{youth.phone || "-"}</TableCell>
-                  <TableCell>{youth.birthDate ? youth.birthDate.split('T')[0].split('-').reverse().join('/') : "-"}</TableCell>
-                  <TableCell>
+                  <TableCell className="hidden sm:table-cell">{youth.phone || "-"}</TableCell>
+                  <TableCell className="hidden md:table-cell">{youth.birthDate ? youth.birthDate.split('T')[0].split('-').reverse().join('/') : "-"}</TableCell>
+                  <TableCell className="hidden lg:table-cell">
                     {youth.leader ? `${youth.leader.firstName} ${youth.leader.lastName}` : <span className="text-muted-foreground">Sin asignar</span>}
                   </TableCell>
                   <TableCell className="text-right flex items-center justify-end gap-2">
