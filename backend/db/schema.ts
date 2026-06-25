@@ -103,6 +103,10 @@ export const meetings = pgTable('Meeting', {
   photoUrl: text('photoUrl'),
   status: text('status', { enum: meetingStatusEnum }).default('SCHEDULED').notNull(),
   leaderId: text('leaderId').references(() => leaders.id, { onDelete: 'set null' }),
+  preacher: text('preacher'),
+  preachingTheme: text('preachingTheme'),
+  subType: text('subType'),
+  meetingNotes: text('meetingNotes'),
   createdAt: timestamp('createdAt', { mode: 'date' }).$defaultFn(() => new Date()).notNull(),
   updatedAt: timestamp('updatedAt', { mode: 'date' }).$defaultFn(() => new Date()).$onUpdate(() => new Date()).notNull(),
 });

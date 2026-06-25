@@ -76,7 +76,7 @@ router.get('/:id/attendance', async (req, res) => {
 // Crear reunión
 router.post('/', async (req, res) => {
   try {
-    const { title, type, date, time, location, description, leaderId, photoUrl } = req.body;
+    const { title, type, date, time, location, description, leaderId, photoUrl, preacher, preachingTheme, subType, meetingNotes } = req.body;
     
     const [newMeeting] = await db.insert(meetings).values({
       title,
@@ -87,6 +87,10 @@ router.post('/', async (req, res) => {
       description,
       photoUrl,
       leaderId: leaderId || null,
+      preacher: preacher || null,
+      preachingTheme: preachingTheme || null,
+      subType: subType || null,
+      meetingNotes: meetingNotes || null,
       status: 'SCHEDULED',
     }).returning();
     
@@ -101,7 +105,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, type, date, time, location, description, photoUrl } = req.body;
+    const { title, type, date, time, location, description, photoUrl, preacher, preachingTheme, subType, meetingNotes } = req.body;
     
     const [updatedMeeting] = await db.update(meetings).set({
       title,
@@ -111,6 +115,10 @@ router.put('/:id', async (req, res) => {
       location,
       description,
       photoUrl,
+      preacher: preacher !== undefined ? preacher : null,
+      preachingTheme: preachingTheme !== undefined ? preachingTheme : null,
+      subType: subType !== undefined ? subType : null,
+      meetingNotes: meetingNotes !== undefined ? meetingNotes : null,
     }).where(eq(meetings.id, id)).returning();
     
     res.json({ success: true, meeting: updatedMeeting });

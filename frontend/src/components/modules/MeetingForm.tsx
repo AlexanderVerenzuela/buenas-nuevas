@@ -1,30 +1,59 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { Upload, Image as ImageIcon, Edit2, Plus } from "lucide-react"
 import { API_URL } from "../../lib/config"
 import { getImageUrl, compressImage } from "../../lib/utils"
+import { useApi } from "../../hooks/useApi"
 
 export function MeetingForm({ onSubmit, initialData, isDropdownItem }: { onSubmit: (data: any) => Promise<boolean>, initialData?: any, isDropdownItem?: boolean }) {
   const [open, setOpen] = useState(false)
   const [pending, setPending] = useState(false)
   
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(initialData?.photoUrl ? getImageUrl(initialData.photoUrl) : null)
   const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [meetingType, setMeetingType] = useState<string>(initialData?.type || "GENERAL")
+  const [preachers, setPreachers] = useState<string[]>([])
+  
+  const { request } = useApi()
 
   useEffect(() => {
-    if (open && initialData) {
-      setPhotoPreview(initialData?.photoUrl ? getImageUrl(initialData.photoUrl) : null)
-      setPhotoFile(null)
-    } else if (open && !initialData) {
-      setPhotoPreview(null)
-      setPhotoFile(null)
+    async function loadPreachers() {
+      try {
+        const [leadersData, youthData] = await Promise.all([
+          request('/leaders'),
+          request('/youth')
+        ]);
+        
+        const leaderNames = (leadersData || []).map((l: any) => `${l.firstName} ${l.lastName || ''}`.trim());
+        const preachingYouthNames = (youthData || [])
+          .filter((y: any) => y.status === 'PREACHING')
+          .map((y: any) => `${y.firstName} ${y.lastName || ''}`.trim());
+          
+        const combined = Array.from(new Set([...leaderNames, ...preachingYouthNames])).sort();
+        setPreachers(combined);
+      } catch (err) {
+        console.error("Error al cargar predicadores:", err);
+      }
+    }
+    
+    if (open) {
+      loadPreachers();
+      if (initialData) {
+        setPhotoPreview(initialData?.photoUrl ? getImageUrl(initialData.photoUrl) : null)
+        setPhotoFile(null)
+        setMeetingType(initialData.type || "GENERAL")
+      } else {
+        setPhotoPreview(null)
+        setPhotoFile(null)
+        setMeetingType("GENERAL")
+      }
     }
   }, [open, initialData])
 
@@ -75,7 +104,11 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem }: { onSubmi
       time: formData.get("time"),
       location: formData.get("location"),
       description: formData.get("description"),
-      photoUrl
+      photoUrl,
+      preacher: formData.get("preacher") || null,
+      preachingTheme: formData.get("preachingTheme") || null,
+      subType: formData.get("subType") || null,
+      meetingNotes: formData.get("meetingNotes") || null,
     }
     const success = await onSubmit(data)
     if (success) {
@@ -118,7 +151,8 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem }: { onSubmi
             
             {/* Portada de la Reunión */}
             <div className="flex flex-col items-center gap-3 p-4 border rounded-xl bg-muted/20">
-              <div className="w-full h-36 rounded-xl border-2 border-dashed border-border/50 bg-background/50 flex flex-col items-center justify-center overflow-hidden cursor-pointer hover:bg-accent/50 transition-colors relative group" onClick={() => fileInputRef.current?.click()}>
+              <label className="w-full h-36 rounded-xl border-2 border-dashed border-border/50 bg-background/50 flex flex-col items-center justify-center overflow-hidden cursor-pointer hover:bg-accent/50 transition-colors relative group">
+                <input type="file" className="hidden" accept="image/*" onChange={handlePhotoSelect} />
                 {photoPreview ? (
                   <>
                     <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
@@ -135,8 +169,7 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem }: { onSubmi
                     <span className="text-xs text-muted-foreground mt-1">Recomendado: 16:9</span>
                   </>
                 )}
-              </div>
-              <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handlePhotoSelect} />
+              </label>
               {photoPreview && (
                 <Button type="button" variant="ghost" size="sm" onClick={() => { setPhotoPreview(null); setPhotoFile(null); }} className="text-red-400 hover:text-red-500 hover:bg-red-500/10">
                   Quitar foto
@@ -150,18 +183,84 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem }: { onSubmi
             </div>
             <div className="grid gap-2">
               <Label htmlFor="type">Tipo de Reunión</Label>
-              <Select name="type" defaultValue={initialData?.type || "GENERAL"} required>
+              <Select 
+                name="type" 
+                value={meetingType} 
+                onValueChange={(val) => setMeetingType(val || "GENERAL")} 
+                required
+              >
                 <SelectTrigger className="bg-background/50">
                   <SelectValue placeholder="Seleccione..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="GENERAL">General</SelectItem>
+                  <SelectItem value="GENERAL">Normal (Culto)</SelectItem>
                   <SelectItem value="DISCIPLESHIP">Discipulado</SelectItem>
                   <SelectItem value="CELL_GROUP">Célula / Grupo Pequeño</SelectItem>
-                  <SelectItem value="SPECIAL_EVENT">Evento Especial</SelectItem>
+                  <SelectItem value="SPECIAL_EVENT">Especial (Actividad)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Campos condicionales según el tipo de reunión */}
+            {meetingType === "GENERAL" ? (
+              <>
+                <div className="grid gap-2">
+                  <Label htmlFor="preacher">¿Quién predicó?</Label>
+                  <Input 
+                    id="preacher" 
+                    name="preacher" 
+                    list="preachers-list" 
+                    defaultValue={initialData?.preacher || ""} 
+                    placeholder="Selecciona o escribe el nombre del predicador..." 
+                    required 
+                    className="bg-background/50 animate-in fade-in-50 duration-200"
+                  />
+                  <datalist id="preachers-list">
+                    {preachers.map((name) => (
+                      <option key={name} value={name} />
+                    ))}
+                  </datalist>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="preachingTheme">Tema de prédica</Label>
+                  <Input 
+                    id="preachingTheme" 
+                    name="preachingTheme" 
+                    defaultValue={initialData?.preachingTheme || ""} 
+                    placeholder="Ej. Fe y Valentía" 
+                    required 
+                    className="bg-background/50 animate-in fade-in-50 duration-200"
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="grid gap-2">
+                  <Label htmlFor="subType">Tipo Especial</Label>
+                  <Select name="subType" defaultValue={initialData?.subType || "cine"}>
+                    <SelectTrigger className="bg-background/50">
+                      <SelectValue placeholder="Seleccione..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cine">Cine</SelectItem>
+                      <SelectItem value="salida evangelistica">Salida Evangelística</SelectItem>
+                      <SelectItem value="otro">Otro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="meetingNotes">Notas adicionales</Label>
+                  <Textarea 
+                    id="meetingNotes" 
+                    name="meetingNotes" 
+                    defaultValue={initialData?.meetingNotes || ""} 
+                    placeholder="Detalles sobre el cine, lugar de salida, o notas generales..." 
+                    className="bg-background/50 min-h-[80px] animate-in fade-in-50 duration-200"
+                  />
+                </div>
+              </>
+            )}
+
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="date">Fecha</Label>
