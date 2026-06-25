@@ -1,7 +1,9 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { prisma } from '../prisma';
+import { db } from '../db';
+import { users } from '../db/schema';
+import { eq } from 'drizzle-orm';
 
 const router = express.Router();
 
@@ -13,8 +15,8 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Por favor, proporciona email y contraseña.' });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email },
+    const user = await db.query.users.findFirst({
+      where: eq(users.email, email),
     });
 
     if (!user || !user.isActive) {
@@ -55,9 +57,11 @@ import { authenticateToken, AuthRequest } from '../middleware/auth';
 
 router.get('/me', authenticateToken, async (req: AuthRequest, res) => {
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: req.user?.id },
-      select: { id: true, email: true, name: true, role: true, isActive: true }
+    if (!req.user?.id) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, req.user.id),
+      columns: { id: true, email: true, name: true, role: true, isActive: true }
     });
     
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });

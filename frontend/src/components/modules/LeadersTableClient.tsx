@@ -123,7 +123,7 @@ export function LeadersTableClient({ initialData, onDelete }: { initialData: any
                   <Badge variant="outline">{leader._count.assignedYouth} jóvenes</Badge>
                 </TableCell>
                 <TableCell>{leader.phone || "-"}</TableCell>
-                <TableCell>{leader.birthDate ? new Date(leader.birthDate).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }) : "-"}</TableCell>
+                <TableCell>{leader.birthDate ? leader.birthDate.split('T')[0].split('-').reverse().join('/') : "-"}</TableCell>
                 <TableCell>
                   {leader.isActive ? (
                     <Badge variant="secondary" className="bg-green-100 text-green-800">Activo</Badge>

@@ -1,5 +1,7 @@
 import express from 'express';
-import { prisma } from '../prisma';
+import { db } from '../db';
+import { leaders } from '../db/schema';
+import { eq } from 'drizzle-orm';
 import { authenticateToken } from '../middleware/auth';
 
 const router = express.Router();
@@ -9,13 +11,13 @@ router.use(authenticateToken);
 // Obtener todos los líderes
 router.get('/', async (req, res) => {
   try {
-    const leaders = await prisma.leader.findMany({
-      include: {
+    const leaderList = await db.query.leaders.findMany({
+      with: {
         assignedYouth: true,
       },
-      orderBy: { firstName: 'asc' },
+      orderBy: (leaders, { asc }) => [asc(leaders.firstName)],
     });
-    res.json(leaders);
+    res.json(leaderList);
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener líderes' });
   }
@@ -26,17 +28,15 @@ router.post('/', async (req, res) => {
   try {
     const { firstName, lastName, phone, email, gender, isActive, observations } = req.body;
     
-    const newLeader = await prisma.leader.create({
-      data: {
-        firstName,
-        lastName,
-        phone,
-        email,
-        gender,
-        isActive: isActive !== undefined ? isActive : true,
-        observations,
-      },
-    });
+    const [newLeader] = await db.insert(leaders).values({
+      firstName,
+      lastName,
+      phone,
+      email,
+      gender,
+      isActive: isActive !== undefined ? isActive : true,
+      observations,
+    }).returning();
     
     res.status(201).json({ success: true, leader: newLeader });
   } catch (error) {
@@ -50,18 +50,15 @@ router.put('/:id', async (req, res) => {
     const { id } = req.params;
     const { firstName, lastName, phone, email, gender, isActive, observations } = req.body;
     
-    const updatedLeader = await prisma.leader.update({
-      where: { id },
-      data: {
-        firstName,
-        lastName,
-        phone,
-        email,
-        gender,
-        isActive,
-        observations,
-      },
-    });
+    const [updatedLeader] = await db.update(leaders).set({
+      firstName,
+      lastName,
+      phone,
+      email,
+      gender,
+      isActive,
+      observations,
+    }).where(eq(leaders.id, id)).returning();
     
     res.json({ success: true, leader: updatedLeader });
   } catch (error) {
@@ -73,9 +70,7 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    await prisma.leader.delete({
-      where: { id },
-    });
+    await db.delete(leaders).where(eq(leaders.id, id));
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Error al eliminar líder' });

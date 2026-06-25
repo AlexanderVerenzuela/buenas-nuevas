@@ -1,5 +1,7 @@
 import express from 'express';
-import { prisma } from '../prisma';
+import { db } from '../db';
+import { meetings, youths, attendances } from '../db/schema';
+import { eq, desc } from 'drizzle-orm';
 import { authenticateToken } from '../middleware/auth';
 
 const router = express.Router();
@@ -8,19 +10,27 @@ router.use(authenticateToken);
 
 router.get('/', async (req, res) => {
   try {
-    const recentMeetings = await prisma.meeting.findMany({
-      orderBy: { date: "desc" },
-      take: 5,
-      include: {
-        _count: { select: { attendances: { where: { status: "PRESENT" } } } }
+    const meetingsList = await db.query.meetings.findMany({
+      orderBy: [desc(meetings.date)],
+      limit: 5,
+      with: {
+        attendances: {
+          where: eq(attendances.status, 'PRESENT')
+        }
       }
     });
 
-    const inactiveOrAlertYouths = await prisma.youth.findMany({
-      where: { 
-        status: "INACTIVE"
-      },
-      include: { leader: true }
+    const recentMeetings = meetingsList.map(m => {
+      const { attendances, ...rest } = m;
+      return {
+        ...rest,
+        _count: { attendances: attendances.length }
+      }
+    });
+
+    const inactiveOrAlertYouths = await db.query.youths.findMany({
+      where: eq(youths.status, 'INACTIVE'),
+      with: { leader: true }
     });
 
     res.json({

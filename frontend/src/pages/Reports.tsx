@@ -26,7 +26,7 @@ export default function Reports() {
   if (loading) return <div>Cargando reportes...</div>;
   if (!data) return <div>Error al cargar reportes.</div>;
 
-  const { recentMeetings, inactiveOrAlertYouths, leaderFollowUps } = data;
+  const { recentMeetings, inactiveOrAlertYouths } = data;
 
   return (
     <div className="space-y-8">
@@ -62,29 +62,14 @@ export default function Reports() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-white/5 bg-card/40 backdrop-blur-xl shadow-2xl">
           <CardHeader>
-            <CardTitle>Trabajo de Líderes (Seguimientos)</CardTitle>
+            <CardTitle>Estadísticas del Sistema</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Líder</TableHead>
-                  <TableHead className="text-right">Seguimientos Realizados</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {leaderFollowUps.map((l: any) => (
-                  <TableRow key={l.id}>
-                    <TableCell>{l.firstName} {l.lastName}</TableCell>
-                    <TableCell className="text-right">
-                      <Badge variant="outline">{l._count.followUpsMade}</Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <div className="flex flex-col gap-2">
+              <p className="text-muted-foreground text-sm">Resumen de actividad.</p>
+            </div>
           </CardContent>
         </Card>
       </div>

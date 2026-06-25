@@ -4,19 +4,30 @@ import { useApi } from '../hooks/useApi';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Save, Briefcase, GraduationCap, MapPin, CalendarDays, Phone } from 'lucide-react';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { ArrowLeft, Save, Briefcase, GraduationCap, MapPin, CalendarDays, Phone, ZoomIn } from 'lucide-react';
 import { EditYouthForm } from '../components/modules/EditYouthForm';
 
 function calculateAge(birthDateString: string) {
   if (!birthDateString) return null;
   const today = new Date();
-  const birthDate = new Date(birthDateString);
+  const birthDate = new Date(birthDateString.split('T')[0] + 'T12:00:00Z');
   let age = today.getFullYear() - birthDate.getFullYear();
   const m = today.getMonth() - birthDate.getMonth();
   if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
     age--;
   }
   return age;
+}
+
+const statusMap = {
+  VISITOR: { label: "Visita", color: "bg-accent text-muted-foreground" },
+  NEW: { label: "Nuevo", color: "bg-blue-500/20 text-blue-400 border-none" },
+  MEMBER: { label: "Miembro", color: "bg-green-500/20 text-green-400 border-none" },
+  LEADER: { label: "Líder", color: "bg-purple-500/20 text-purple-400 border-none" },
+  INACTIVE: { label: "Inactivo", color: "bg-red-500/20 text-red-400 border-none" },
+  PREACHING: { label: "Prédica", color: "bg-cyan-500/20 text-cyan-400 border-none" },
+  FAMILY: { label: "Familiar", color: "bg-yellow-500/20 text-yellow-400 border-none" },
 }
 
 export default function YouthProfile() {
@@ -73,25 +84,37 @@ export default function YouthProfile() {
               <ArrowLeft className="w-4 h-4" />
             </Button>
           </Link>
-          
+
           <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-end -mt-12">
-            <div className="w-28 h-28 rounded-2xl border-4 border-background shadow-lg overflow-hidden bg-muted flex-shrink-0 z-10">
+            <div className="w-28 h-28 rounded-2xl border-4 border-background shadow-lg overflow-hidden bg-muted flex-shrink-0 z-10 group relative aspect-square">
               {profile.avatarUrl ? (
-                <img src={profile.avatarUrl.startsWith('http') ? profile.avatarUrl : `http://localhost:5000${profile.avatarUrl}`} alt="Avatar" className="w-full h-full object-cover" />
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <div className="cursor-pointer w-full h-full relative block">
+                      <img src={profile.avatarUrl.startsWith('http') || profile.avatarUrl.startsWith('blob:') ? profile.avatarUrl : `http://localhost:5000${profile.avatarUrl}`} alt="Avatar" className="w-full h-full object-cover aspect-square transition-transform group-hover:scale-105 duration-300" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
+                        <ZoomIn className="w-6 h-6 text-white" />
+                      </div>
+                    </div>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-3xl bg-transparent border-none shadow-none flex items-center justify-center p-0">
+                    <img src={profile.avatarUrl.startsWith('http') || profile.avatarUrl.startsWith('blob:') ? profile.avatarUrl : `http://localhost:5000${profile.avatarUrl}`} alt="Avatar Zoom" className="w-full h-auto max-h-[85vh] object-contain rounded-lg shadow-2xl" />
+                  </DialogContent>
+                </Dialog>
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-muted-foreground bg-gradient-to-br from-muted to-muted/50">
                   {profile.firstName[0]}
                 </div>
               )}
             </div>
-            
+
             <div className="flex-1 pb-2">
               <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                 <h2 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
                   {profile.firstName} {profile.lastName}
                 </h2>
-                <Badge variant={profile.status === 'LEADER' ? 'default' : 'outline'} className="text-sm px-3 py-1 shadow-sm">
-                  {profile.status}
+                <Badge variant="secondary" className={`text-sm px-3 py-1 shadow-sm ${statusMap[profile.status as keyof typeof statusMap]?.color || statusMap.VISITOR.color}`}>
+                  {statusMap[profile.status as keyof typeof statusMap]?.label || profile.status}
                 </Badge>
               </div>
               <p className="text-muted-foreground mt-2 flex items-center gap-2">
@@ -101,9 +124,9 @@ export default function YouthProfile() {
                 )}
               </p>
             </div>
-            
+
             <div className="pb-2">
-               <EditYouthForm youth={profile} />
+              <EditYouthForm youth={profile} />
             </div>
           </div>
         </div>
@@ -122,18 +145,18 @@ export default function YouthProfile() {
                   <p className="font-medium">{profile.phone || 'No registrado'}</p>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-purple-500/10 rounded-lg text-purple-500"><CalendarDays className="w-4 h-4" /></div>
                 <div>
                   <p className="text-xs text-muted-foreground font-medium">Nacimiento</p>
                   <p className="font-medium">
-                    {profile.birthDate ? new Date(profile.birthDate).toLocaleDateString() : 'No registrado'}
+                    {profile.birthDate ? profile.birthDate.split('T')[0].split('-').reverse().join('/') : 'No registrado'}
                     {profile.birthDate && <span className="text-muted-foreground ml-1">({calculateAge(profile.birthDate)} años)</span>}
                   </p>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-orange-500/10 rounded-lg text-orange-500"><GraduationCap className="w-4 h-4" /></div>
                 <div>
@@ -142,7 +165,7 @@ export default function YouthProfile() {
                   {profile.studyCenter && <p className="text-xs text-muted-foreground">{profile.studyCenter}</p>}
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-500"><Briefcase className="w-4 h-4" /></div>
                 <div>
@@ -157,13 +180,13 @@ export default function YouthProfile() {
 
         {/* Columna Derecha: Notas y Asistencia */}
         <div className="space-y-6 md:col-span-2">
-          
+
           {/* Notas y Observaciones */}
           <div className="rounded-2xl border bg-card/50 backdrop-blur-sm text-card-foreground shadow-sm p-6">
             <h3 className="font-semibold text-lg border-b border-border/50 pb-2 mb-4">Notas y Observaciones del Líder</h3>
             <div className="space-y-4">
-              <Textarea 
-                placeholder="Escribe detalles importantes, peticiones de oración, o seguimiento aquí..." 
+              <Textarea
+                placeholder="Escribe detalles importantes, peticiones de oración, o seguimiento aquí..."
                 className="min-h-[120px] resize-y bg-background border-muted"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
@@ -202,7 +225,7 @@ export default function YouthProfile() {
               </div>
             )}
           </div>
-          
+
         </div>
       </div>
     </div>

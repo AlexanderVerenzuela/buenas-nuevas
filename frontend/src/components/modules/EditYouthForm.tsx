@@ -17,6 +17,29 @@ export function EditYouthForm({ youth }: { youth: any }) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [photoPreview, setPhotoPreview] = useState(youth.avatarUrl || null)
   const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0]
+      if (file.type.startsWith('image/')) {
+        setPhotoFile(file)
+        setPhotoPreview(URL.createObjectURL(file))
+      }
+    }
+  }
 
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -96,18 +119,33 @@ export function EditYouthForm({ youth }: { youth: any }) {
           <div className="grid gap-6 py-4">
             
             {/* Foto de Perfil */}
-            <div className="flex flex-col items-center gap-4 p-4 border rounded-xl bg-muted/20">
-              <div className="w-24 h-24 rounded-full border-4 border-background shadow-md overflow-hidden bg-muted flex items-center justify-center">
+            <div 
+              className={`flex flex-col items-center gap-4 p-6 border-2 border-dashed rounded-xl transition-all duration-200 ${
+                isDragging ? 'border-primary bg-primary/10 scale-[1.02]' : 'border-muted-foreground/25 bg-muted/10'
+              }`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              <div className="w-24 h-24 rounded-full border-4 border-background shadow-md overflow-hidden bg-muted flex items-center justify-center relative group">
                 {photoPreview ? (
-                  <img src={photoPreview.startsWith('http') ? photoPreview : `http://localhost:5000${photoPreview}`} alt="Preview" className="w-full h-full object-cover" />
+                  <img src={photoPreview.startsWith('http') || photoPreview.startsWith('blob:') ? photoPreview : `http://localhost:5000${photoPreview}`} alt="Preview" className="w-full h-full aspect-square object-cover" />
                 ) : (
                   <ImageIcon className="w-8 h-8 text-muted-foreground" />
                 )}
+                {isDragging && (
+                  <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                    <Upload className="w-6 h-6 text-primary animate-bounce" />
+                  </div>
+                )}
               </div>
               <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handlePhotoSelect} />
-              <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
-                <Upload className="w-4 h-4 mr-2" /> Subir Foto
-              </Button>
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-2">Arrastra una imagen aquí o</p>
+                <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} className="bg-card hover:bg-accent">
+                  <Upload className="w-4 h-4 mr-2" /> Examinar archivos
+                </Button>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

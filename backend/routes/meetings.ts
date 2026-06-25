@@ -1,5 +1,7 @@
 import express from 'express';
-import { prisma } from '../prisma';
+import { db } from '../db';
+import { meetings, youths, attendances } from '../db/schema';
+import { eq, count, getTableColumns } from 'drizzle-orm';
 import { authenticateToken } from '../middleware/auth';
 
 const router = express.Router();
@@ -9,17 +11,28 @@ router.use(authenticateToken);
 // Obtener todas las reuniones
 router.get('/', async (req, res) => {
   try {
-    const meetings = await prisma.meeting.findMany({
-      include: {
+    // In drizzle, to get relations + count of a relation, we can fetch all and map, or use a left join
+    // Using Drizzle relational API for simplicity
+    const meetingsList = await db.query.meetings.findMany({
+      with: {
         leader: true,
-        _count: {
-          select: { attendances: true }
-        }
+        attendances: true,
       },
-      orderBy: { date: 'desc' },
+      orderBy: (meetings, { desc }) => [desc(meetings.date)],
     });
-    res.json(meetings);
+    
+    // Format to match prisma output (_count)
+    const formatted = meetingsList.map(m => {
+      const { attendances, ...rest } = m;
+      return {
+        ...rest,
+        _count: { attendances: attendances.length }
+      }
+    });
+
+    res.json(formatted);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Error al obtener reuniones' });
   }
 });
@@ -28,8 +41,8 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const meeting = await prisma.meeting.findUnique({
-      where: { id },
+    const meeting = await db.query.meetings.findFirst({
+      where: eq(meetings.id, id),
     });
     if (!meeting) return res.status(404).json({ error: 'Reunión no encontrada' });
     res.json(meeting);
@@ -42,17 +55,20 @@ router.get('/:id', async (req, res) => {
 router.get('/:id/attendance', async (req, res) => {
   try {
     const { id } = req.params;
-    const youthList = await prisma.youth.findMany({
-      where: { isActive: true },
-      include: {
+    
+    const youthList = await db.query.youths.findMany({
+      where: eq(youths.isActive, true),
+      with: {
         attendances: {
-          where: { meetingId: id }
+          where: eq(attendances.meetingId, id)
         }
       },
-      orderBy: { firstName: 'asc' }
+      orderBy: (youths, { asc }) => [asc(youths.firstName)]
     });
+
     res.json(youthList);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Error al obtener asistencia' });
   }
 });
@@ -62,22 +78,21 @@ router.post('/', async (req, res) => {
   try {
     const { title, type, date, time, location, description, leaderId, photoUrl } = req.body;
     
-    const newMeeting = await prisma.meeting.create({
-      data: {
-        title,
-        type,
-        date: new Date(date),
-        time,
-        location,
-        description,
-        photoUrl,
-        leaderId: leaderId || null,
-        status: 'SCHEDULED',
-      },
-    });
+    const [newMeeting] = await db.insert(meetings).values({
+      title,
+      type,
+      date: new Date(date),
+      time,
+      location,
+      description,
+      photoUrl,
+      leaderId: leaderId || null,
+      status: 'SCHEDULED',
+    }).returning();
     
     res.status(201).json({ success: true, meeting: newMeeting });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Error al crear reunión' });
   }
 });
@@ -88,18 +103,15 @@ router.put('/:id', async (req, res) => {
     const { id } = req.params;
     const { title, type, date, time, location, description, photoUrl } = req.body;
     
-    const updatedMeeting = await prisma.meeting.update({
-      where: { id },
-      data: {
-        title,
-        type,
-        date: new Date(date),
-        time,
-        location,
-        description,
-        photoUrl,
-      },
-    });
+    const [updatedMeeting] = await db.update(meetings).set({
+      title,
+      type,
+      date: new Date(date),
+      time,
+      location,
+      description,
+      photoUrl,
+    }).where(eq(meetings.id, id)).returning();
     
     res.json({ success: true, meeting: updatedMeeting });
   } catch (error) {
@@ -111,9 +123,7 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    await prisma.meeting.delete({
-      where: { id },
-    });
+    await db.delete(meetings).where(eq(meetings.id, id));
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Error al eliminar reunión' });

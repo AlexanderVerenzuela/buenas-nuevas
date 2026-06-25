@@ -1,5 +1,7 @@
 import express from 'express';
-import { prisma } from '../prisma';
+import { db } from '../db';
+import { youths, leaders } from '../db/schema';
+import { eq, and } from 'drizzle-orm';
 import { authenticateToken } from '../middleware/auth';
 
 const router = express.Router();
@@ -10,12 +12,12 @@ router.use(authenticateToken);
 // Obtener todos los jóvenes
 router.get('/', async (req, res) => {
   try {
-    const youthList = await prisma.youth.findMany({
-      include: {
+    const youthList = await db.query.youths.findMany({
+      with: {
         leader: true,
         group: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: (youths, { desc }) => [desc(youths.createdAt)],
     });
     res.json(youthList);
   } catch (error) {
@@ -28,20 +30,26 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const youth = await prisma.youth.findUnique({
-      where: { id },
-      include: {
+    const youth = await db.query.youths.findFirst({
+      where: eq(youths.id, id),
+      with: {
         leader: true,
         group: true,
         attendances: {
-          include: { meeting: true },
-          orderBy: { meeting: { date: 'desc' } },
-          take: 10,
+          with: { meeting: true },
+          orderBy: (attendances, { desc }) => [desc(attendances.createdAt)], // Meeting date would need a join for order by, falling back to attendance creation
+          limit: 10,
         },
       },
     });
 
     if (!youth) return res.status(404).json({ error: 'Joven no encontrado' });
+
+    // Sort attendances by meeting date locally since Drizzle relational query doesn't support nested relation ordering easily
+    if (youth.attendances) {
+      youth.attendances.sort((a: any, b: any) => new Date(b.meeting.date).getTime() - new Date(a.meeting.date).getTime());
+    }
+
     res.json(youth);
   } catch (error) {
     console.error(error);
@@ -54,36 +62,34 @@ router.post('/', async (req, res) => {
   try {
     const { firstName, lastName, phone, email, status } = req.body;
 
-    const existingYouth = await prisma.youth.findFirst({
-      where: { firstName, lastName },
+    const existingYouth = await db.query.youths.findFirst({
+      where: and(eq(youths.firstName, firstName), eq(youths.lastName, lastName)),
     });
 
     if (existingYouth) {
       return res.status(400).json({ error: 'Este joven ya está registrado en el sistema.' });
     }
 
-    const newYouth = await prisma.youth.create({
-      data: {
-        firstName,
-        lastName,
-        phone,
-        email,
-        status: status || 'VISITOR',
-      },
-    });
+    const newYouthArray = await db.insert(youths).values({
+      firstName,
+      lastName,
+      phone,
+      email,
+      status: status || 'VISITOR',
+    }).returning();
+
+    const newYouth = newYouthArray[0];
 
     // Sincronizar Líder
-    if (status === 'LEADER') {
-      await prisma.leader.create({
-        data: {
-          youthId: newYouth.id,
-          firstName: newYouth.firstName,
-          lastName: newYouth.lastName,
-          phone: newYouth.phone,
-          email: newYouth.email,
-          gender: newYouth.gender,
-          birthDate: newYouth.birthDate,
-        },
+    if (status === 'LEADER' && newYouth) {
+      await db.insert(leaders).values({
+        youthId: newYouth.id,
+        firstName: newYouth.firstName,
+        lastName: newYouth.lastName,
+        phone: newYouth.phone,
+        email: newYouth.email,
+        gender: newYouth.gender,
+        birthDate: newYouth.birthDate,
       });
     }
 
@@ -98,21 +104,20 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { 
+    const {
       firstName, lastName, phone, status, birthDate,
       isStudying, career, studyCenter,
       isWorking, occupation, workplace,
       avatarUrl
     } = req.body;
 
-    const updatedYouth = await prisma.youth.update({
-      where: { id },
-      data: {
+    const updatedYouthArray = await db.update(youths)
+      .set({
         firstName,
         lastName,
         phone,
         status,
-        birthDate: birthDate ? new Date(birthDate) : null,
+        birthDate: birthDate ? new Date(birthDate + 'T12:00:00Z') : null,
         isStudying,
         career,
         studyCenter,
@@ -120,10 +125,11 @@ router.put('/:id', async (req, res) => {
         occupation,
         workplace,
         avatarUrl
-      },
-    });
+      })
+      .where(eq(youths.id, id))
+      .returning();
 
-    res.json({ success: true, youth: updatedYouth });
+    res.json({ success: true, youth: updatedYouthArray[0] });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al actualizar joven' });
@@ -136,10 +142,9 @@ router.patch('/:id/notes', async (req, res) => {
     const { id } = req.params;
     const { notes } = req.body;
 
-    await prisma.youth.update({
-      where: { id },
-      data: { observations: notes },
-    });
+    await db.update(youths)
+      .set({ observations: notes })
+      .where(eq(youths.id, id));
 
     res.json({ success: true });
   } catch (error) {
@@ -152,9 +157,7 @@ router.patch('/:id/notes', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    await prisma.youth.delete({
-      where: { id },
-    });
+    await db.delete(youths).where(eq(youths.id, id));
     res.json({ success: true });
   } catch (error) {
     console.error(error);

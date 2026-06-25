@@ -1,15 +1,15 @@
 "use client"
 
 import { Link, useLocation } from "react-router-dom"
-import { Home, Users, UserCog, Users2, CalendarDays, FileBarChart } from "lucide-react"
+import { Home, Users, UserCog, Users2, CalendarDays, FileBarChart, Gift } from "lucide-react"
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: Home },
   { href: "/youth", label: "Jóvenes", icon: Users },
-  { href: "/leaders", label: "Líderes", icon: UserCog },
   { href: "/groups", label: "Grupos", icon: Users2 },
   { href: "/meetings", label: "Reuniones", icon: CalendarDays },
   { href: "/reports", label: "Reportes", icon: FileBarChart },
+  { href: "/birthdays", label: "Cumpleaños", icon: Gift },
 ]
 
 export function SidebarNav() {

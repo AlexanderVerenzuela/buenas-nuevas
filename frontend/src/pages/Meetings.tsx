@@ -3,6 +3,7 @@ import { useApi } from '../hooks/useApi';
 import { MeetingForm } from '../components/modules/MeetingForm';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Link } from "react-router-dom"
 
 const typeMap = {

@@ -192,7 +192,7 @@ export function YouthTableClient({ initialData, onDelete }: { initialData: any[]
                     </Badge>
                   </TableCell>
                   <TableCell>{youth.phone || "-"}</TableCell>
-                  <TableCell>{youth.birthDate ? new Date(youth.birthDate).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }) : "-"}</TableCell>
+                  <TableCell>{youth.birthDate ? youth.birthDate.split('T')[0].split('-').reverse().join('/') : "-"}</TableCell>
                   <TableCell>
                     {youth.leader ? `${youth.leader.firstName} ${youth.leader.lastName}` : <span className="text-muted-foreground">Sin asignar</span>}
                   </TableCell>

@@ -85,15 +85,19 @@ export function MeetingForm({ onSubmit, initialData }: { onSubmit: (data: any) =
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+      <DialogTrigger
+        render={
+          initialData ? (
+            <Button variant="ghost" size="sm" className="text-blue-500 hover:text-blue-600 hover:bg-blue-500/10 h-8 px-2" />
+          ) : (
+            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 rounded-xl" />
+          )
+        }
+      >
         {initialData ? (
-          <Button variant="ghost" size="sm" className="text-blue-500 hover:text-blue-600 hover:bg-blue-500/10 h-8 px-2">
-            <Edit2 className="w-4 h-4 mr-1" /> Editar
-          </Button>
+          <><Edit2 className="w-4 h-4 mr-1" /> Editar</>
         ) : (
-          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 rounded-xl">
-            <Plus className="w-4 h-4 mr-2" /> Nueva Reunión
-          </Button>
+          <><Plus className="w-4 h-4 mr-2" /> Nueva Reunión</>
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px] border-border/50 bg-card/95 backdrop-blur-xl">

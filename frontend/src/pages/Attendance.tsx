@@ -3,7 +3,8 @@ import { useApi } from '../hooks/useApi';
 import { useParams, Link } from 'react-router-dom';
 import { AttendanceTableClient } from '../components/modules/AttendanceTableClient';
 import { Button } from "@/components/ui/button"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, ZoomIn } from "lucide-react"
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 
 export default function Attendance() {
   const { meetingId } = useParams();
@@ -46,9 +47,17 @@ export default function Attendance() {
           </Button>
         </Link>
         {meeting.photoUrl && (
-          <div className="relative z-10 w-24 h-24 rounded-lg overflow-hidden shadow-md hidden sm:block">
-            <img src={`http://localhost:5000${meeting.photoUrl}`} alt={meeting.title} className="w-full h-full object-cover" />
-          </div>
+          <Dialog>
+            <DialogTrigger className="relative z-10 w-24 h-24 rounded-xl overflow-hidden shadow-lg hidden sm:block group cursor-pointer border-2 border-white/10 hover:border-white/30 transition-all">
+              <img src={`http://localhost:5000${meeting.photoUrl}`} alt={meeting.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <ZoomIn className="text-white w-6 h-6 drop-shadow-md" />
+              </div>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[90vw] h-[90vh] p-0 bg-transparent border-none shadow-none flex items-center justify-center">
+              <img src={`http://localhost:5000${meeting.photoUrl}`} alt={meeting.title} className="w-full h-full object-contain drop-shadow-2xl" />
+            </DialogContent>
+          </Dialog>
         )}
         <div className="relative z-10">
           <h2 className="text-2xl font-bold tracking-tight text-foreground">Pasar Lista: {meeting.title}</h2>

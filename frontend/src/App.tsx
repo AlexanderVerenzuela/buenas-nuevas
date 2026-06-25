@@ -7,11 +7,11 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Youth from './pages/Youth';
 import YouthProfile from './pages/YouthProfile';
-import Leaders from './pages/Leaders';
 import Meetings from './pages/Meetings';
 import Attendance from './pages/Attendance';
 import Groups from './pages/Groups';
 import Reports from './pages/Reports';
+import Birthdays from './pages/Birthdays';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -64,13 +64,7 @@ function AppRoutes() {
           </Layout>
         </ProtectedRoute>
       } />
-      <Route path="/leaders" element={
-        <ProtectedRoute>
-          <Layout>
-            <Leaders />
-          </Layout>
-        </ProtectedRoute>
-      } />
+
       <Route path="/meetings" element={
         <ProtectedRoute>
           <Layout>
@@ -96,6 +90,13 @@ function AppRoutes() {
         <ProtectedRoute>
           <Layout>
             <Reports />
+          </Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/birthdays" element={
+        <ProtectedRoute>
+          <Layout>
+            <Birthdays />
           </Layout>
         </ProtectedRoute>
       } />

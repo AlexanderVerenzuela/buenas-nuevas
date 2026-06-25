@@ -4,9 +4,10 @@ import { useState, useMemo } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search, Save } from "lucide-react"
+import { Search, Save, Filter } from "lucide-react"
 import { useApi } from "../../hooks/useApi"
 import { normalizeText } from "@/lib/utils"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export function AttendanceTableClient({ 
   meetingId, 
@@ -32,14 +33,30 @@ export function AttendanceTableClient({
     return initialState
   })
 
+  const [filter, setFilter] = useState<'ALL' | 'PRESENT' | 'ABSENT'>('ALL')
+
   const filteredYouthList = useMemo(() => {
-    if (!searchQuery) return initialYouthList
-    const lowerQuery = normalizeText(searchQuery)
-    return initialYouthList.filter(youth => {
-      const fullName = normalizeText(`${youth.firstName} ${youth.lastName}`)
-      return fullName.includes(lowerQuery)
-    })
-  }, [initialYouthList, searchQuery])
+    let result = initialYouthList
+
+    if (filter !== 'ALL') {
+      result = result.filter(youth => {
+        const status = localAttendance[youth.id]
+        if (filter === 'PRESENT') return status === 'PRESENT'
+        if (filter === 'ABSENT') return status === 'ABSENT' || !status
+        return true
+      })
+    }
+
+    if (searchQuery) {
+      const lowerQuery = normalizeText(searchQuery)
+      result = result.filter(youth => {
+        const fullName = normalizeText(`${youth.firstName} ${youth.lastName}`)
+        return fullName.includes(lowerQuery)
+      })
+    }
+    
+    return result
+  }, [initialYouthList, searchQuery, filter, localAttendance])
 
   const handleMark = (youthId: string, status: 'PRESENT' | 'ABSENT' | 'EXCUSED') => {
     setLocalAttendance(prev => ({
@@ -80,24 +97,36 @@ export function AttendanceTableClient({
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div className="w-full sm:max-w-sm relative">
-          <Input 
-            placeholder="Buscar joven por nombre..." 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 bg-card"
-          />
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <div className="flex flex-1 items-center gap-2">
+          <div className="w-full sm:max-w-sm relative">
+            <Input 
+              placeholder="Buscar joven por nombre..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 bg-card"
+            />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          </div>
+          <Select value={filter} onValueChange={(val: any) => setFilter(val)}>
+            <SelectTrigger className="w-[180px] bg-card">
+              <SelectValue placeholder="Filtro" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">Todos los Jóvenes</SelectItem>
+              <SelectItem value="PRESENT">Solo Asistentes</SelectItem>
+              <SelectItem value="ABSENT">Solo Faltantes</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <Button onClick={handleBulkSave} disabled={pending} className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white gap-2">
+        <Button onClick={handleBulkSave} disabled={pending} className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-500/20 rounded-xl px-6 gap-2">
           <Save className="h-4 w-4" />
           {pending ? "Guardando..." : "Guardar Asistencia"}
         </Button>
       </div>
 
-      <div className="rounded-md border border-border bg-card/50 backdrop-blur-md">
+      <div className="rounded-xl border border-white/5 bg-card/40 backdrop-blur-xl shadow-2xl overflow-hidden">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-muted/30">
             <TableRow>
               <TableHead>Joven</TableHead>
               <TableHead>Grupo</TableHead>
