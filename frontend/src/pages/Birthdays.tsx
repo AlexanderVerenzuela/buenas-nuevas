@@ -137,7 +137,7 @@ export default function Birthdays() {
                     <div key={b.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/30 transition-colors">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden border border-white/10">
-                          {b.avatarUrl ? (
+                          {getImageUrl(b.avatarUrl) ? (
                             <img src={getImageUrl(b.avatarUrl)} alt="" className="w-full h-full object-cover" />
                           ) : (
                             <User className="w-4 h-4 text-muted-foreground" />
@@ -171,7 +171,7 @@ function BirthdayCard({ person, highlight = false }: { person: any, highlight?: 
   return (
     <div className={`flex items-center gap-4 p-4 rounded-xl transition-all hover:scale-[1.02] ${highlight ? 'bg-background shadow-md' : 'bg-card border border-white/5 shadow-sm hover:shadow-md'}`}>
       <div className="w-14 h-14 rounded-full border-2 border-background shadow-sm overflow-hidden bg-muted flex items-center justify-center flex-shrink-0">
-        {person.avatarUrl ? (
+        {getImageUrl(person.avatarUrl) ? (
           <img src={getImageUrl(person.avatarUrl)} alt="" className="w-full h-full object-cover" />
         ) : (
           <User className="w-6 h-6 text-muted-foreground" />

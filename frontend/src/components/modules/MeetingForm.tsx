@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { Upload, Image as ImageIcon, Edit2, Plus } from "lucide-react"
 import { API_URL } from "../../lib/config"
-import { getImageUrl } from "../../lib/utils"
+import { getImageUrl, compressImage } from "../../lib/utils"
 
 export function MeetingForm({ onSubmit, initialData }: { onSubmit: (data: any) => Promise<boolean>, initialData?: any }) {
   const [open, setOpen] = useState(false)
@@ -45,8 +45,11 @@ export function MeetingForm({ onSubmit, initialData }: { onSubmit: (data: any) =
     // Subir imagen de reunión si se seleccionó una nueva
     if (photoFile) {
       const imgData = new FormData();
-      imgData.append('image', photoFile);
       try {
+        // Comprimir la imagen antes de subirla (máx 600x400 píxeles, 70% calidad)
+        const compressedFile = await compressImage(photoFile, 600, 400, 0.7);
+        imgData.append('image', compressedFile);
+        
         const token = localStorage.getItem('token') || '';
         const tokenVal = token.replace(/['"]+/g, '');
         const uploadRes = await fetch(`${API_URL}/upload`, {

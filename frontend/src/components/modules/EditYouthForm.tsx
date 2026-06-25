@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { useApi } from "../../hooks/useApi"
 import { Edit3, Upload, Image as ImageIcon } from "lucide-react"
 import { API_URL } from "../../lib/config"
-import { getImageUrl } from "../../lib/utils"
+import { getImageUrl, compressImage } from "../../lib/utils"
 
 export function EditYouthForm({ youth }: { youth: any }) {
   const [open, setOpen] = useState(false)
@@ -59,8 +59,11 @@ export function EditYouthForm({ youth }: { youth: any }) {
     
     if (photoFile) {
       const imgData = new FormData();
-      imgData.append('image', photoFile);
       try {
+        // Comprimir la imagen antes de subirla (máx 300x300 píxeles, 70% calidad)
+        const compressedFile = await compressImage(photoFile, 300, 300, 0.7);
+        imgData.append('image', compressedFile);
+        
         const token = localStorage.getItem('token') || '';
         const tokenVal = token.replace(/['"]+/g, ''); // en caso que esté como string JSON
         const uploadRes = await fetch(`${API_URL}/upload`, {
@@ -130,7 +133,7 @@ export function EditYouthForm({ youth }: { youth: any }) {
               onDrop={handleDrop}
             >
               <div className="w-24 h-24 rounded-full border-4 border-background shadow-md overflow-hidden bg-muted flex items-center justify-center relative group">
-                {photoPreview ? (
+                {getImageUrl(photoPreview) ? (
                   <img src={getImageUrl(photoPreview)} alt="Preview" className="w-full h-full aspect-square object-cover" />
                 ) : (
                   <ImageIcon className="w-8 h-8 text-muted-foreground" />

@@ -88,7 +88,7 @@ export default function YouthProfile() {
 
           <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-end -mt-12">
             <div className="w-28 h-28 rounded-2xl border-4 border-background shadow-lg overflow-hidden bg-muted flex-shrink-0 z-10 group relative aspect-square">
-              {profile.avatarUrl ? (
+              {getImageUrl(profile.avatarUrl) ? (
                 <Dialog>
                   <DialogTrigger render={<div className="cursor-pointer w-full h-full relative block" />}>
                       <img src={getImageUrl(profile.avatarUrl)} alt="Avatar" className="w-full h-full object-cover aspect-square transition-transform group-hover:scale-105 duration-300" />
@@ -101,8 +101,11 @@ export default function YouthProfile() {
                   </DialogContent>
                 </Dialog>
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-muted-foreground bg-gradient-to-br from-muted to-muted/50">
-                  {profile.firstName[0]}
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-500/20 to-purple-500/20 text-indigo-400">
+                  <span className="text-3xl font-bold uppercase">
+                    {profile.firstName[0]}
+                    {profile.lastName ? profile.lastName[0] : ''}
+                  </span>
                 </div>
               )}
             </div>

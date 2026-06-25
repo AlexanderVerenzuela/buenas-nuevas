@@ -39,7 +39,7 @@ export default function Attendance() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-6 p-6 border rounded-xl bg-card shadow-sm relative overflow-hidden">
-        {meeting.photoUrl && (
+        {getImageUrl(meeting.photoUrl) && (
           <div className="absolute inset-0 opacity-10 bg-cover bg-center" style={{ backgroundImage: `url(${getImageUrl(meeting.photoUrl)})` }} />
         )}
         <Link to="/meetings" className="relative z-10">
@@ -47,7 +47,7 @@ export default function Attendance() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
-        {meeting.photoUrl && (
+        {getImageUrl(meeting.photoUrl) && (
           <Dialog>
             <DialogTrigger className="relative z-10 w-24 h-24 rounded-xl overflow-hidden shadow-lg hidden sm:block group cursor-pointer border-2 border-white/10 hover:border-white/30 transition-all">
               <img src={getImageUrl(meeting.photoUrl)} alt={meeting.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
