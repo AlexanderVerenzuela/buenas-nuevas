@@ -392,8 +392,8 @@ export default function Meetings() {
                         <ZoomIn className="w-6 h-6 text-white" />
                       </div>
                     </DialogTrigger>
-                    <DialogContent className="max-w-3xl bg-transparent border-none shadow-none flex items-center justify-center p-0">
-                      <img src={getImageUrl(selectedMeeting.photoUrl)} alt={selectedMeeting.title} className="w-full h-auto max-h-[85vh] object-contain rounded-lg shadow-2xl" />
+                    <DialogContent className="max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] bg-transparent border-none shadow-none flex items-center justify-center p-0">
+                      <img src={getImageUrl(selectedMeeting.photoUrl)} alt={selectedMeeting.title} className="w-full h-auto max-h-[90vh] object-contain rounded-lg shadow-2xl" />
                     </DialogContent>
                   </Dialog>
                 )}
