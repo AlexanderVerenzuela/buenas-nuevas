@@ -5,9 +5,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Link } from "react-router-dom"
-import { ArrowUpDown, Settings, ArrowUp, ArrowDown, Search, MoreVertical } from "lucide-react"
+import { Search, MoreVertical } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { normalizeText, getImageUrl } from "@/lib/utils"
 
@@ -23,58 +22,7 @@ const statusMap = {
 
 const defaultStatusOrder = ["LEADER", "FAMILY", "MEMBER", "NEW", "VISITOR", "PREACHING", "INACTIVE"]
 
-export function StatusOrderConfig({ order, setOrder }: { order: string[], setOrder: (o: string[]) => void }) {
-  const [open, setOpen] = useState(false)
-  const moveUp = (index: number) => {
-    if (index === 0) return
-    const newOrder = [...order]
-    ;[newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]]
-    setOrder(newOrder)
-  }
-  const moveDown = (index: number) => {
-    if (index === order.length - 1) return
-    const newOrder = [...order]
-    ;[newOrder[index + 1], newOrder[index]] = [newOrder[index], newOrder[index + 1]]
-    setOrder(newOrder)
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="outline" size="sm" className="gap-2 mb-4 bg-card" />}>
-        <Settings className="h-4 w-4" /> Configurar Orden de Estados
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Prioridad de Estados</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-2 py-4">
-          <p className="text-sm text-muted-foreground mb-4">Usa las flechas para ordenar qué estado tiene mayor prioridad en la tabla.</p>
-          {order.map((statusKey, index) => {
-            const info = statusMap[statusKey as keyof typeof statusMap]
-            if (!info) return null
-            return (
-              <div key={statusKey} className="flex items-center justify-between p-2 border rounded-md">
-                <Badge variant="secondary" className={info.color}>{info.label}</Badge>
-                <div className="flex items-center gap-1">
-                  <Button variant="ghost" size="icon" onClick={() => moveUp(index)} disabled={index === 0}>
-                    <ArrowUp className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => moveDown(index)} disabled={index === order.length - 1}>
-                    <ArrowDown className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
 export function YouthTableClient({ initialData, onDelete }: { initialData: any[], onDelete: (id: string) => void }) {
-  const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>({ key: 'status', direction: 'asc' })
-  const [statusOrder, setStatusOrder] = useState<string[]>(defaultStatusOrder)
   const [searchQuery, setSearchQuery] = useState("")
 
   const filteredData = useMemo(() => {
@@ -88,57 +36,20 @@ export function YouthTableClient({ initialData, onDelete }: { initialData: any[]
   }, [initialData, searchQuery])
 
   const sortedData = useMemo(() => {
-    let sortableItems = [...filteredData]
-    if (sortConfig !== null) {
-      sortableItems.sort((a, b) => {
-        let aValue = a[sortConfig.key] || ""
-        let bValue = b[sortConfig.key] || ""
-
-        if (sortConfig.key === 'name') {
-          aValue = `${a.firstName} ${a.lastName}`
-          bValue = `${b.firstName} ${b.lastName}`
-        } else if (sortConfig.key === 'leader') {
-          aValue = a.leader ? `${a.leader.firstName} ${a.leader.lastName}` : 'Z' // Send empty to bottom
-          bValue = b.leader ? `${b.leader.firstName} ${b.leader.lastName}` : 'Z'
-        } else if (sortConfig.key === 'birthDate') {
-          aValue = a.birthDate ? new Date(a.birthDate).getTime() : 0
-          bValue = b.birthDate ? new Date(b.birthDate).getTime() : 0
-        }
-
-        if (sortConfig.key === 'status') {
-          const aIndex = statusOrder.indexOf(a.status)
-          const bIndex = statusOrder.indexOf(b.status)
-          if (aIndex < bIndex) return sortConfig.direction === 'asc' ? -1 : 1
-          if (aIndex > bIndex) return sortConfig.direction === 'asc' ? 1 : -1
-          
-          // Same status -> sort alphabetically by full name
-          const aName = normalizeText(`${a.firstName} ${a.lastName}`)
-          const bName = normalizeText(`${b.firstName} ${b.lastName}`)
-          return aName.localeCompare(bName)
-        }
-
-        if (typeof aValue === 'string' && typeof bValue === 'string') {
-          const normA = normalizeText(aValue)
-          const normB = normalizeText(bValue)
-          const comparison = normA.localeCompare(normB)
-          return sortConfig.direction === 'asc' ? comparison : -comparison
-        }
-
-        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1
-        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1
-        return 0
-      })
-    }
+    const sortableItems = [...filteredData]
+    sortableItems.sort((a, b) => {
+      const aIndex = defaultStatusOrder.indexOf(a.status)
+      const bIndex = defaultStatusOrder.indexOf(b.status)
+      if (aIndex < bIndex) return -1
+      if (aIndex > bIndex) return 1
+      
+      // Same status -> sort alphabetically by full name
+      const aName = normalizeText(`${a.firstName} ${a.lastName}`)
+      const bName = normalizeText(`${b.firstName} ${b.lastName}`)
+      return aName.localeCompare(bName)
+    })
     return sortableItems
-  }, [filteredData, sortConfig, statusOrder])
-
-  const requestSort = (key: string) => {
-    let direction: 'asc' | 'desc' = 'asc'
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc'
-    }
-    setSortConfig({ key, direction })
-  }
+  }, [filteredData])
 
   return (
     <div>
@@ -152,7 +63,6 @@ export function YouthTableClient({ initialData, onDelete }: { initialData: any[]
           />
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         </div>
-        <StatusOrderConfig order={statusOrder} setOrder={setStatusOrder} />
       </div>
       <div className="rounded-xl border border-white/5 bg-card/40 backdrop-blur-xl shadow-2xl overflow-x-auto">
         <Table>
@@ -161,12 +71,8 @@ export function YouthTableClient({ initialData, onDelete }: { initialData: any[]
             <TableHead>Nombre Completo</TableHead>
             <TableHead>Estado</TableHead>
             <TableHead className="hidden sm:table-cell">Teléfono</TableHead>
-            <TableHead className="hidden md:table-cell cursor-pointer hover:bg-accent/50" onClick={() => requestSort('birthDate')}>
-              <div className="flex items-center gap-2">Cumpleaños <ArrowUpDown className="h-4 w-4" /></div>
-            </TableHead>
-            <TableHead className="hidden lg:table-cell cursor-pointer hover:bg-accent/50" onClick={() => requestSort('leader')}>
-              <div className="flex items-center gap-2">Líder Asignado <ArrowUpDown className="h-4 w-4" /></div>
-            </TableHead>
+            <TableHead className="hidden md:table-cell">Cumpleaños</TableHead>
+            <TableHead className="hidden lg:table-cell">Líder Asignado</TableHead>
             <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
