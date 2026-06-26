@@ -14,6 +14,8 @@ import Attendance from './pages/Attendance';
 import Groups from './pages/Groups';
 import Reports from './pages/Reports';
 import Birthdays from './pages/Birthdays';
+import Profile from './pages/Profile';
+import AdminPasswords from './pages/AdminPasswords';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -131,6 +133,20 @@ function AppRoutes() {
         <ProtectedRoute>
           <Layout>
             <Birthdays />
+          </Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/profile" element={
+        <ProtectedRoute>
+          <Layout>
+            <Profile />
+          </Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/passwords" element={
+        <ProtectedRoute>
+          <Layout>
+            <AdminPasswords />
           </Layout>
         </ProtectedRoute>
       } />
