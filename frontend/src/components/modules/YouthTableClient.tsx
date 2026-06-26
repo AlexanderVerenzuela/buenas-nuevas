@@ -110,7 +110,11 @@ export function YouthTableClient({ initialData, onDelete }: { initialData: any[]
           const bIndex = statusOrder.indexOf(b.status)
           if (aIndex < bIndex) return sortConfig.direction === 'asc' ? -1 : 1
           if (aIndex > bIndex) return sortConfig.direction === 'asc' ? 1 : -1
-          return 0
+          
+          // Same status -> sort alphabetically by full name
+          const aName = normalizeText(`${a.firstName} ${a.lastName}`)
+          const bName = normalizeText(`${b.firstName} ${b.lastName}`)
+          return aName.localeCompare(bName)
         }
 
         if (typeof aValue === 'string' && typeof bValue === 'string') {
@@ -154,12 +158,8 @@ export function YouthTableClient({ initialData, onDelete }: { initialData: any[]
         <Table>
         <TableHeader className="bg-muted/30">
           <TableRow>
-            <TableHead className="cursor-pointer hover:bg-accent/50" onClick={() => requestSort('name')}>
-              <div className="flex items-center gap-2">Nombre Completo <ArrowUpDown className="h-4 w-4" /></div>
-            </TableHead>
-            <TableHead className="cursor-pointer hover:bg-accent/50" onClick={() => requestSort('status')}>
-              <div className="flex items-center gap-2">Estado <ArrowUpDown className="h-4 w-4" /></div>
-            </TableHead>
+            <TableHead>Nombre Completo</TableHead>
+            <TableHead>Estado</TableHead>
             <TableHead className="hidden sm:table-cell">Teléfono</TableHead>
             <TableHead className="hidden md:table-cell cursor-pointer hover:bg-accent/50" onClick={() => requestSort('birthDate')}>
               <div className="flex items-center gap-2">Cumpleaños <ArrowUpDown className="h-4 w-4" /></div>
