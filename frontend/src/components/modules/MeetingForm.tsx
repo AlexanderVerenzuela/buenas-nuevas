@@ -219,17 +219,15 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem, forceOpen, 
             </div>
           </div>
 
-          <div className={`grid gap-5 ${meetingType !== "GENERAL" ? "" : "hidden"}`}>
-            <div className="grid gap-2">
-              <Label htmlFor="meetingNotes">Notas adicionales</Label>
-              <Textarea 
-                id="meetingNotes" 
-                name="meetingNotes" 
-                defaultValue={initialData?.meetingNotes || ""} 
-                placeholder="Detalles sobre el cine, lugar de salida, o notas generales..." 
-                className="bg-background/50 min-h-[80px]"
-              />
-            </div>
+          <div className="grid gap-2">
+            <Label htmlFor="meetingNotes">Notas / Programa de la Reunión</Label>
+            <Textarea 
+              id="meetingNotes" 
+              name="meetingNotes" 
+              defaultValue={initialData?.meetingNotes || ""} 
+              placeholder="Detalles del programa (ej. quién está en la puerta, orden del día) o notas de la reunión..." 
+              className="bg-background/50 min-h-[80px]"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">

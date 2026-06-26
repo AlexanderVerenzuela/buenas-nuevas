@@ -6,8 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Link } from "react-router-dom"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
-import { MoreVertical, Trash2, CalendarDays, MapPin, Users, Mic, BookOpen, Clapperboard, Footprints, Sparkles, Edit2 } from "lucide-react"
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { MoreVertical, Trash2, CalendarDays, MapPin, Users, Mic, BookOpen, Clapperboard, Footprints, Sparkles, Edit2, ZoomIn } from "lucide-react"
 import { getImageUrl } from '../lib/utils';
 
 const typeMap: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
@@ -29,8 +29,21 @@ const subTypeMap: Record<string, { label: string; icon: React.ReactNode }> = {
 
 const statusMap: Record<string, { label: string; color: string }> = {
   SCHEDULED: { label: "Programada", color: "bg-blue-500/10 text-blue-400 border-blue-500/20" },
-  COMPLETED: { label: "Completada", color: "bg-green-500/10 text-green-400 border-green-500/20" },
+  COMPLETED: { label: "Finalizada", color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
   CANCELLED: { label: "Cancelada", color: "bg-red-500/10 text-red-400 border-red-500/20" },
+}
+
+const getMeetingStatus = (meeting: any) => {
+  if (meeting.status === 'CANCELLED') return 'CANCELLED';
+  const meetingDate = new Date(meeting.date);
+  if (meeting.time) {
+    const [hours, minutes] = meeting.time.split(':');
+    meetingDate.setHours(parseInt(hours) || 0, parseInt(minutes) || 0, 0, 0);
+  } else {
+    meetingDate.setHours(23, 59, 59, 999);
+  }
+  const isPassed = meetingDate.getTime() < Date.now();
+  return isPassed ? 'COMPLETED' : 'SCHEDULED';
 }
 
 export default function Meetings() {
@@ -149,7 +162,8 @@ export default function Meetings() {
               </TableRow>
             ) : (
               meetings.map((meeting: any) => {
-                const sMap = statusMap[meeting.status as keyof typeof statusMap] || statusMap.SCHEDULED
+                const currentStatus = getMeetingStatus(meeting)
+                const sMap = statusMap[currentStatus] || statusMap.SCHEDULED
                 const tMap = typeMap[meeting.type as keyof typeof typeMap] || typeMap.GENERAL
                 return (
                   <TableRow key={meeting.id}>
@@ -212,14 +226,9 @@ export default function Meetings() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-col gap-1.5">
-                        <Badge variant="outline" className={sMap.color}>
-                          {sMap.label}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">
-                          {meeting._count?.attendances || 0} asistencias
-                        </span>
-                      </div>
+                      <Badge variant="outline" className={sMap.color}>
+                        {sMap.label}
+                      </Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1.5">
@@ -263,7 +272,8 @@ export default function Meetings() {
           </div>
         ) : (
           meetings.map((meeting: any) => {
-            const sMap = statusMap[meeting.status as keyof typeof statusMap] || statusMap.SCHEDULED
+            const currentStatus = getMeetingStatus(meeting)
+            const sMap = statusMap[currentStatus] || statusMap.SCHEDULED
             const tMap = typeMap[meeting.type as keyof typeof typeMap] || typeMap.GENERAL
             return (
               <div key={meeting.id} className="rounded-xl border border-white/5 bg-card/40 backdrop-blur-xl shadow-lg overflow-hidden animate-in fade-in duration-200">
@@ -312,7 +322,7 @@ export default function Meetings() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
-
+ 
                   {/* Info grid */}
                   <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground" onClick={() => handleViewDetails(meeting)}>
                     <div className="flex items-center gap-1.5 cursor-pointer">
@@ -344,10 +354,6 @@ export default function Meetings() {
                         <span>{subTypeMap[meeting.subType]?.label || meeting.subType}</span>
                       </div>
                     )}
-                    <div className="flex items-center gap-1.5 cursor-pointer">
-                      <Users className="w-3.5 h-3.5 text-primary/60" />
-                      <span>{meeting._count?.attendances || 0} asistencias</span>
-                    </div>
                   </div>
 
                   {/* Meeting notes */}
@@ -377,9 +383,19 @@ export default function Meetings() {
             <div className="space-y-6">
               <div className="flex flex-col gap-4">
                 {selectedMeeting.photoUrl && (
-                  <div className="relative w-full h-48 rounded-xl overflow-hidden shadow-lg border border-white/10">
-                    <img src={getImageUrl(selectedMeeting.photoUrl)} alt={selectedMeeting.title} className="w-full h-full object-cover" />
-                  </div>
+                  <Dialog>
+                    <DialogTrigger render={
+                      <div className="relative w-full h-48 rounded-xl overflow-hidden shadow-lg border border-white/10 cursor-pointer group" />
+                    }>
+                      <img src={getImageUrl(selectedMeeting.photoUrl)} alt={selectedMeeting.title} className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
+                        <ZoomIn className="w-6 h-6 text-white" />
+                      </div>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-3xl bg-transparent border-none shadow-none flex items-center justify-center p-0">
+                      <img src={getImageUrl(selectedMeeting.photoUrl)} alt={selectedMeeting.title} className="w-full h-auto max-h-[85vh] object-contain rounded-lg shadow-2xl" />
+                    </DialogContent>
+                  </Dialog>
                 )}
                 <div>
                   <DialogTitle className="text-2xl font-bold tracking-tight text-foreground">{selectedMeeting.title}</DialogTitle>
@@ -460,29 +476,24 @@ export default function Meetings() {
                     {(() => {
                       const present = attendanceList.filter(y => y.attendances[0]?.status === 'PRESENT');
                       const absent = attendanceList.filter(y => y.attendances[0]?.status !== 'PRESENT');
-                      const total = attendanceList.length;
-                      const percentage = total > 0 ? Math.round((present.length / total) * 100) : 0;
+                      const presentLeaders = present.filter(y => y.status === 'LEADER').length;
+                      const presentYouths = present.filter(y => y.status !== 'LEADER').length;
 
                       return (
                         <div className="space-y-4">
                           <div className="grid grid-cols-3 gap-3">
                             <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-3 text-center">
-                              <div className="text-2xl font-bold text-green-400">{present.length}</div>
-                              <div className="text-[10px] sm:text-xs text-green-400/80 font-medium">Asistieron</div>
+                              <div className="text-2xl font-bold text-green-400">{presentLeaders}</div>
+                              <div className="text-[10px] sm:text-xs text-green-400/80 font-medium">Líderes</div>
                             </div>
-                            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-center">
-                              <div className="text-2xl font-bold text-red-400">{absent.length}</div>
-                              <div className="text-[10px] sm:text-xs text-red-400/80 font-medium">Faltaron</div>
+                            <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 text-center">
+                              <div className="text-2xl font-bold text-blue-400">{presentYouths}</div>
+                              <div className="text-[10px] sm:text-xs text-blue-400/80 font-medium">Jóvenes</div>
                             </div>
                             <div className="bg-primary/10 border border-primary/20 rounded-xl p-3 text-center">
-                              <div className="text-2xl font-bold text-primary">{percentage}%</div>
-                              <div className="text-[10px] sm:text-xs text-primary/80 font-medium">Asistencia</div>
+                              <div className="text-2xl font-bold text-primary">{present.length}</div>
+                              <div className="text-[10px] sm:text-xs text-primary/80 font-medium">Total Asistió</div>
                             </div>
-                          </div>
-
-                          {/* Progress bar */}
-                          <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
-                            <div className="bg-green-500 h-full transition-all duration-500" style={{ width: `${percentage}%` }} />
                           </div>
 
                           {/* Columns */}
