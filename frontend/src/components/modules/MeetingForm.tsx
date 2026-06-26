@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { Upload, Image as ImageIcon, Edit2, Plus } from "lucide-react"
 import { API_URL } from "../../lib/config"
@@ -28,16 +27,6 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem, forceOpen, 
   const [preachers, setPreachers] = useState<string[]>([])
   
   const { request } = useApi()
-
-  // If forceOpen is set, use it to control visibility
-  const isOpen = forceOpen !== undefined ? forceOpen : open
-  const handleOpenChange = (val: boolean) => {
-    if (forceOpen !== undefined) {
-      if (!val && onClose) onClose();
-    } else {
-      setOpen(val);
-    }
-  }
 
   useEffect(() => {
     async function loadPreachers() {
