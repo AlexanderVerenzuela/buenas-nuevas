@@ -4,7 +4,7 @@ import { useApi } from '../hooks/useApi';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogTrigger, DialogClose } from '@/components/ui/dialog';
+
 import { ArrowLeft, Save, Briefcase, GraduationCap, CalendarDays, Phone, ZoomIn, X } from 'lucide-react';
 import { EditYouthForm } from '../components/modules/EditYouthForm';
 import { getImageUrl } from '../lib/utils';
@@ -39,6 +39,7 @@ export default function YouthProfile() {
   const [loading, setLoading] = useState(!location.state?.profile);
   const [notes, setNotes] = useState("");
   const [savingNotes, setSavingNotes] = useState(false);
+  const [zoomedPhoto, setZoomedPhoto] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadProfile() {
@@ -89,22 +90,15 @@ export default function YouthProfile() {
           <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-end -mt-12">
             <div className="w-28 h-28 rounded-2xl border-4 border-background shadow-lg overflow-hidden bg-muted flex-shrink-0 z-10 group relative aspect-square">
               {getImageUrl(profile.avatarUrl) ? (
-                <Dialog>
-                  <DialogTrigger render={<div className="cursor-pointer w-full h-full relative block" />}>
+                  <div 
+                    onClick={() => setZoomedPhoto(profile.avatarUrl)}
+                    className="cursor-pointer w-full h-full relative block"
+                  >
                     <img src={getImageUrl(profile.avatarUrl)} alt="Avatar" className="w-full h-full object-cover aspect-square transition-transform group-hover:scale-105 duration-300" />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
                       <ZoomIn className="w-6 h-6 text-white" />
                     </div>
-                  </DialogTrigger>
-                  <DialogContent showCloseButton={false} className="fixed inset-0 !top-0 !left-0 !translate-x-0 !translate-y-0 max-w-none w-screen h-screen bg-black/90 flex items-center justify-center p-4 rounded-none border-none ring-0 focus-visible:ring-0 cursor-zoom-out z-[9999]">
-                    <DialogClose render={<div className="w-full h-full flex items-center justify-center relative outline-none cursor-zoom-out" />}>
-                      <div className="absolute top-4 right-4 p-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 text-white transition-all cursor-pointer shadow-lg z-50">
-                        <X className="w-5 h-5" />
-                      </div>
-                      <img src={getImageUrl(profile.avatarUrl)} alt="Avatar Zoom" className="max-w-[95vw] max-h-[90vh] object-contain rounded-2xl shadow-2xl border border-white/5 cursor-zoom-out" />
-                    </DialogClose>
-                  </DialogContent>
-                </Dialog>
+                  </div>
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-500/20 to-purple-500/20 text-indigo-400">
                   <span className="text-3xl font-bold uppercase">
@@ -235,6 +229,21 @@ export default function YouthProfile() {
 
         </div>
       </div>
+      {zoomedPhoto && (
+        <div 
+          onClick={() => setZoomedPhoto(null)}
+          className="fixed inset-0 z-[99999] bg-black/95 flex items-center justify-center cursor-zoom-out p-4 animate-in fade-in duration-200"
+        >
+          <div className="absolute top-4 right-4 p-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 text-white transition-all cursor-pointer shadow-lg z-50">
+            <X className="w-5 h-5" />
+          </div>
+          <img 
+            src={getImageUrl(zoomedPhoto)} 
+            alt="Zoomed" 
+            className="max-w-[95vw] max-h-[90vh] object-contain rounded-2xl shadow-2xl border border-white/5 cursor-zoom-out" 
+          />
+        </div>
+      )}
     </div>
   );
 }

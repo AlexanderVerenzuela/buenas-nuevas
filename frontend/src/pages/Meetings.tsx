@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Link } from "react-router-dom"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
-import { Dialog, DialogContent, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { MoreVertical, Trash2, CalendarDays, MapPin, Users, Mic, BookOpen, Clapperboard, Footprints, Sparkles, Edit2, ZoomIn, X } from "lucide-react"
 import { getImageUrl } from '../lib/utils';
 
@@ -54,6 +54,7 @@ export default function Meetings() {
   const [attendanceList, setAttendanceList] = useState<any[]>([]);
   const [loadingAttendance, setLoadingAttendance] = useState(false);
   const [editingMeeting, setEditingMeeting] = useState<any>(null);
+  const [zoomedPhoto, setZoomedPhoto] = useState<string | null>(null);
 
   const handleViewDetails = async (meeting: any) => {
     setSelectedMeeting(meeting);
@@ -382,25 +383,16 @@ export default function Meetings() {
           {selectedMeeting && (
             <div className="space-y-6">
               <div className="flex flex-col gap-4">
-                {selectedMeeting.photoUrl && (
-                  <Dialog>
-                    <DialogTrigger render={
-                      <div className="relative w-full h-48 rounded-xl overflow-hidden shadow-lg border border-white/10 cursor-pointer group" />
-                    }>
-                      <img src={getImageUrl(selectedMeeting.photoUrl)} alt={selectedMeeting.title} className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
-                        <ZoomIn className="w-6 h-6 text-white" />
-                      </div>
-                    </DialogTrigger>
-                    <DialogContent showCloseButton={false} className="fixed inset-0 !top-0 !left-0 !translate-x-0 !translate-y-0 max-w-none w-screen h-screen bg-black/90 flex items-center justify-center p-4 rounded-none border-none ring-0 focus-visible:ring-0 cursor-zoom-out z-[9999]">
-                      <DialogClose render={<div className="w-full h-full flex items-center justify-center relative outline-none cursor-zoom-out" />}>
-                        <div className="absolute top-4 right-4 p-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 text-white transition-all cursor-pointer shadow-lg z-50">
-                          <X className="w-5 h-5" />
-                        </div>
-                        <img src={getImageUrl(selectedMeeting.photoUrl)} alt={selectedMeeting.title} className="max-w-[95vw] max-h-[90vh] object-contain rounded-2xl shadow-2xl border border-white/5 cursor-zoom-out" />
-                      </DialogClose>
-                    </DialogContent>
-                  </Dialog>
+                 {selectedMeeting.photoUrl && (
+                  <div 
+                    onClick={() => setZoomedPhoto(selectedMeeting.photoUrl)}
+                    className="relative w-full h-48 rounded-xl overflow-hidden shadow-lg border border-white/10 cursor-pointer group"
+                  >
+                    <img src={getImageUrl(selectedMeeting.photoUrl)} alt={selectedMeeting.title} className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300" />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
+                      <ZoomIn className="w-6 h-6 text-white" />
+                    </div>
+                  </div>
                 )}
                 <div>
                   <DialogTitle className="text-2xl font-bold tracking-tight text-foreground">{selectedMeeting.title}</DialogTitle>
@@ -563,6 +555,21 @@ export default function Meetings() {
             return ok;
           }}
         />
+      )}
+      {zoomedPhoto && (
+        <div 
+          onClick={() => setZoomedPhoto(null)}
+          className="fixed inset-0 z-[99999] bg-black/95 flex items-center justify-center cursor-zoom-out p-4 animate-in fade-in duration-200"
+        >
+          <div className="absolute top-4 right-4 p-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 text-white transition-all cursor-pointer shadow-lg z-50">
+            <X className="w-5 h-5" />
+          </div>
+          <img 
+            src={getImageUrl(zoomedPhoto)} 
+            alt="Zoomed" 
+            className="max-w-[95vw] max-h-[90vh] object-contain rounded-2xl shadow-2xl border border-white/5 cursor-zoom-out" 
+          />
+        </div>
       )}
     </div>
   )
