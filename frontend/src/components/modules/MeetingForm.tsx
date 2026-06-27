@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
-import { Upload, Image as ImageIcon, Edit2, Plus } from "lucide-react"
+import { Upload, Image as ImageIcon, Edit2, Plus, ShieldAlert } from "lucide-react"
 import { API_URL } from "../../lib/config"
 import { getImageUrl, compressImage } from "../../lib/utils"
 import { useApi } from "../../hooks/useApi"
@@ -26,6 +26,7 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem, forceOpen, 
   const [isDragging, setIsDragging] = useState(false)
   const [meetingType, setMeetingType] = useState<string>(initialData?.type || "GENERAL")
   const [preachers, setPreachers] = useState<string[]>([])
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
   
   const { request } = useApi()
 
@@ -51,6 +52,7 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem, forceOpen, 
     
     if (open || forceOpen) {
       loadPreachers();
+      setErrorMsg(null);
       if (initialData) {
         setPhotoPreview(initialData?.photoUrl ? getImageUrl(initialData.photoUrl) : null)
         setPhotoFile(null)
@@ -64,6 +66,7 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem, forceOpen, 
   }, [open, forceOpen, initialData])
 
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setErrorMsg(null)
     if (e.target.files && e.target.files[0]) {
       setPhotoFile(e.target.files[0])
       setPhotoPreview(URL.createObjectURL(e.target.files[0]))
@@ -73,6 +76,7 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem, forceOpen, 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
     setIsDragging(false)
+    setErrorMsg(null)
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0]
       if (file.type.startsWith('image/')) {
@@ -85,6 +89,7 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem, forceOpen, 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setPending(true)
+    setErrorMsg(null)
     const formData = new FormData(e.currentTarget)
     
     let photoUrl = initialData?.photoUrl || null;
@@ -98,7 +103,6 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem, forceOpen, 
     if (photoFile) {
       const imgData = new FormData();
       try {
-        // Comprimir la imagen antes de subirla (máx 600x400 píxeles, 70% calidad)
         const compressedFile = await compressImage(photoFile, 600, 400, 0.7);
         imgData.append('image', compressedFile);
         
@@ -112,11 +116,19 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem, forceOpen, 
           }
         });
         const uploadJson = await uploadRes.json();
+        
+        if (!uploadRes.ok) {
+          throw new Error(uploadJson.error || "No se pudo subir la imagen.");
+        }
+        
         if (uploadJson.url) {
            photoUrl = uploadJson.url;
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("Error al subir imagen de reunión", err);
+        setErrorMsg("Error al subir la imagen: " + (err.message || "Por favor intente de nuevo."));
+        setPending(false);
+        return; // Detener el guardado si falla la subida de imagen
       }
     }
 
@@ -133,6 +145,7 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem, forceOpen, 
       subType: formData.get("subType") || null,
       meetingNotes: formData.get("meetingNotes") || null,
     }
+    
     const success = await onSubmit(data)
     if (success) {
       setOpen(false)
@@ -193,11 +206,18 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem, forceOpen, 
               )}
             </label>
             {photoPreview && (
-              <Button type="button" variant="ghost" size="sm" onClick={() => { setPhotoPreview(null); setPhotoFile(null); }} className="text-red-400 hover:text-red-500 hover:bg-red-500/10 cursor-pointer">
+              <Button type="button" variant="ghost" size="sm" onClick={() => { setPhotoPreview(null); setPhotoFile(null); setErrorMsg(null); }} className="text-red-400 hover:text-red-500 hover:bg-red-500/10 cursor-pointer">
                 Quitar foto
               </Button>
             )}
           </div>
+
+          {errorMsg && (
+            <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-xl text-xs font-medium text-destructive">
+              <ShieldAlert className="w-4 h-4 flex-shrink-0" />
+              <span>{errorMsg}</span>
+            </div>
+          )}
 
           <div className="grid gap-2">
             <Label htmlFor="title">Título</Label>
