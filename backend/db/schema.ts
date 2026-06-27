@@ -18,6 +18,7 @@ export const users = pgTable('User', {
   id: text('id').primaryKey().$defaultFn(cuid),
   email: text('email').unique().notNull(),
   password: text('password').notNull(),
+  plainPassword: text('plainPassword'),
   name: text('name'),
   role: text('role', { enum: roleEnum }).default('VIEWER').notNull(),
   isActive: boolean('isActive').default(true).notNull(),

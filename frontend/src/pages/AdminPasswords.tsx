@@ -21,6 +21,7 @@ export default function AdminPasswords() {
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [modalLoading, setModalLoading] = useState(false)
   const [modalError, setModalError] = useState("")
   const [modalSuccess, setModalSuccess] = useState("")
@@ -116,7 +117,64 @@ export default function AdminPasswords() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-white/5 bg-card/40 backdrop-blur-xl shadow-2xl overflow-x-auto">
+      {/* Mobile view: list of cards */}
+      <div className="space-y-4 md:hidden">
+        {filteredUsers.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground text-sm bg-card/40 border border-white/5 rounded-xl">
+            No se encontraron accesos de usuario.
+          </div>
+        ) : (
+          filteredUsers.map((u) => (
+            <div key={u.id} className="p-4 rounded-xl border border-white/5 bg-card/40 backdrop-blur-xl flex flex-col gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full overflow-hidden bg-muted flex items-center justify-center border border-white/10 flex-shrink-0">
+                  {getImageUrl(u.avatarUrl) ? (
+                    <img src={getImageUrl(u.avatarUrl)} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-500/20 to-purple-500/20 text-indigo-400 text-sm font-bold uppercase">
+                      {u.name ? u.name[0] : (u.email ? u.email[0] : 'U')}
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h4 className="font-semibold text-sm truncate text-foreground">{u.name || "Sin Nombre"}</h4>
+                  <p className="text-xs text-muted-foreground truncate font-mono mt-0.5">{u.email}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className={u.role === 'ADMIN' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20 text-[10px]' : 'bg-blue-500/10 text-blue-400 border-blue-500/20 text-[10px]'}>
+                  {u.role === 'ADMIN' ? 'Administrador' : 'Líder'}
+                </Badge>
+                <Badge variant="outline" className={u.isActive ? 'bg-green-500/10 text-green-400 border-green-500/20 text-[10px]' : 'bg-red-500/10 text-red-400 border-red-500/20 text-[10px]'}>
+                  {u.isActive ? 'Activo' : 'Inactivo'}
+                </Badge>
+              </div>
+              <div className="border-t border-white/5 pt-3 mt-1 flex justify-end">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => {
+                    setSelectedUser(u)
+                    setUsername(u.email)
+                    setModalError("")
+                    setModalSuccess("")
+                    setNewPassword("")
+                    setConfirmPassword("")
+                    setShowPassword(false)
+                    setShowCurrentPassword(false)
+                  }}
+                  className="bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 hover:text-primary transition-all text-xs w-full py-2 h-auto"
+                >
+                  <Settings className="w-3.5 h-3.5 mr-1.5" /> Editar Acceso
+                </Button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop view: table */}
+      <div className="hidden md:block rounded-xl border border-white/5 bg-card/40 backdrop-blur-xl shadow-2xl overflow-x-auto">
         <Table>
           <TableHeader className="bg-muted/30">
             <TableRow>
@@ -174,8 +232,9 @@ export default function AdminPasswords() {
                         setNewPassword("")
                         setConfirmPassword("")
                         setShowPassword(false)
+                        setShowCurrentPassword(false)
                       }}
-                      className="bg-card hover:bg-primary hover:text-primary-foreground gap-1.5 transition-all text-xs"
+                      className="bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 hover:text-primary transition-all text-xs"
                     >
                       <Settings className="w-3.5 h-3.5" /> Editar Acceso
                     </Button>
@@ -214,6 +273,27 @@ export default function AdminPasswords() {
                   placeholder="Ej. alexander"
                   required
                   className="bg-background/50 rounded-xl font-mono text-xs"
+                />
+              </div>
+
+              {/* Show current plain text password */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label>Contraseña Actual</Label>
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+                  >
+                    {showCurrentPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    <span>{showCurrentPassword ? "Ocultar" : "Ver"}</span>
+                  </button>
+                </div>
+                <Input 
+                  type={showCurrentPassword ? "text" : "password"}
+                  value={selectedUser.plainPassword || "123456"}
+                  readOnly
+                  className="bg-muted/30 border border-white/5 rounded-xl font-mono text-xs cursor-default select-all"
                 />
               </div>
 

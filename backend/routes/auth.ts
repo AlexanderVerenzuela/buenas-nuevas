@@ -85,6 +85,7 @@ router.get('/users', authenticateToken, async (req: AuthRequest, res) => {
       name: users.name,
       role: users.role,
       isActive: users.isActive,
+      plainPassword: users.plainPassword,
       avatarUrl: youths.avatarUrl
     })
     .from(users)
@@ -131,6 +132,7 @@ router.put('/users/:id', authenticateToken, async (req: AuthRequest, res) => {
 
     if (password && password.trim().length >= 4) {
       updateData.password = await bcrypt.hash(password.trim(), 10);
+      updateData.plainPassword = password.trim();
     } else if (password && password.trim().length > 0) {
       return res.status(400).json({ error: 'La nueva contraseña debe tener al menos 4 caracteres.' });
     }
@@ -182,7 +184,7 @@ router.put('/me/password', authenticateToken, async (req: AuthRequest, res) => {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     await db.update(users)
-      .set({ password: hashedPassword, updatedAt: new Date() })
+      .set({ password: hashedPassword, plainPassword: newPassword, updatedAt: new Date() })
       .where(eq(users.id, req.user.id));
 
     res.json({ success: true, message: 'Contraseña actualizada correctamente.' });
