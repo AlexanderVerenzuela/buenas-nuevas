@@ -4,7 +4,7 @@ import { useApi } from '../hooks/useApi';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { ArrowLeft, Save, Briefcase, GraduationCap, CalendarDays, Phone, ZoomIn } from 'lucide-react';
 import { EditYouthForm } from '../components/modules/EditYouthForm';
 import { getImageUrl } from '../lib/utils';
@@ -96,8 +96,10 @@ export default function YouthProfile() {
                       <ZoomIn className="w-6 h-6 text-white" />
                     </div>
                   </DialogTrigger>
-                  <DialogContent className="max-w-3xl bg-transparent border-none shadow-none flex items-center justify-center p-0">
-                    <img src={getImageUrl(profile.avatarUrl)} alt="Avatar Zoom" className="w-full h-auto max-h-[85vh] object-contain rounded-lg shadow-2xl" />
+                  <DialogContent showCloseButton={false} className="max-w-3xl sm:max-w-none bg-transparent border-none shadow-none flex items-center justify-center p-0">
+                    <DialogClose className="cursor-zoom-out w-full h-full flex items-center justify-center outline-none">
+                      <img src={getImageUrl(profile.avatarUrl)} alt="Avatar Zoom" className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl border border-white/10" />
+                    </DialogClose>
                   </DialogContent>
                 </Dialog>
               ) : (

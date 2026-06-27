@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Link } from "react-router-dom"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog"
 import { MoreVertical, Trash2, CalendarDays, MapPin, Users, Mic, BookOpen, Clapperboard, Footprints, Sparkles, Edit2, ZoomIn } from "lucide-react"
 import { getImageUrl } from '../lib/utils';
 
@@ -392,8 +392,10 @@ export default function Meetings() {
                         <ZoomIn className="w-6 h-6 text-white" />
                       </div>
                     </DialogTrigger>
-                    <DialogContent className="max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] bg-transparent border-none shadow-none flex items-center justify-center p-0">
-                      <img src={getImageUrl(selectedMeeting.photoUrl)} alt={selectedMeeting.title} className="w-full h-auto max-h-[90vh] object-contain rounded-lg shadow-2xl" />
+                    <DialogContent showCloseButton={false} className="max-w-[95vw] md:max-w-[85vw] lg:max-w-[80vw] sm:max-w-none bg-transparent border-none shadow-none flex items-center justify-center p-0">
+                      <DialogClose className="cursor-zoom-out w-full h-full flex items-center justify-center outline-none">
+                        <img src={getImageUrl(selectedMeeting.photoUrl)} alt={selectedMeeting.title} className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl border border-white/10" />
+                      </DialogClose>
                     </DialogContent>
                   </Dialog>
                 )}

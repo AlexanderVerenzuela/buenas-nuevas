@@ -5,7 +5,7 @@ import { AttendanceTableClient } from '../components/modules/AttendanceTableClie
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, ZoomIn } from "lucide-react"
 import { getImageUrl } from '../lib/utils';
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTrigger, DialogClose } from "@/components/ui/dialog"
 
 export default function Attendance() {
   const { meetingId } = useParams();
@@ -55,8 +55,10 @@ export default function Attendance() {
                 <ZoomIn className="text-white w-5 h-5 sm:w-6 sm:h-6 drop-shadow-md" />
               </div>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[90vw] h-[90vh] p-0 bg-transparent border-none shadow-none flex items-center justify-center">
-              <img src={getImageUrl(meeting.photoUrl)} alt={meeting.title} className="w-full h-full object-contain drop-shadow-2xl" />
+            <DialogContent showCloseButton={false} className="sm:max-w-none max-w-[90vw] h-[90vh] p-0 bg-transparent border-none shadow-none flex items-center justify-center">
+              <DialogClose className="cursor-zoom-out w-full h-full flex items-center justify-center outline-none">
+                <img src={getImageUrl(meeting.photoUrl)} alt={meeting.title} className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl border border-white/10" />
+              </DialogClose>
             </DialogContent>
           </Dialog>
         )}
