@@ -29,11 +29,9 @@ export function SidebarNav({ isOpen, onClose }: { isOpen?: boolean; onClose?: ()
     }`}>
       <div className="flex h-20 items-center justify-between px-8 border-b border-white/5">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-            <span className="font-bold text-white text-sm">BN</span>
-          </div>
+          <img src="/favicon.png" className="w-10 h-10 object-contain rounded-lg shadow-sm" alt="Logo" />
           <span className="font-bold text-xl tracking-tight text-foreground bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">
-            Buenas Nuevas
+            Juventud BN
           </span>
         </div>
         {onClose && (

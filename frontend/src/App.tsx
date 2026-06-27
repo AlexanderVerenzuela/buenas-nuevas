@@ -39,11 +39,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       {/* Mobile Top Header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#0a0a0b]/80 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-6 z-40 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-md">
-            <span className="font-bold text-white text-xs">BN</span>
-          </div>
+          <img src="/favicon.png" className="w-10 h-10 object-contain rounded-lg shadow-sm" alt="Logo" />
           <span className="font-bold text-lg text-foreground bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">
-            Buenas Nuevas
+            Juventud BN
           </span>
         </div>
         <button 
