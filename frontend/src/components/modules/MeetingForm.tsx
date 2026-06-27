@@ -6,10 +6,22 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
-import { Upload, Image as ImageIcon, Edit2, Plus, ShieldAlert } from "lucide-react"
+import { Image as ImageIcon, Edit2, Plus, ShieldAlert, X } from "lucide-react"
 import { API_URL } from "../../lib/config"
 import { getImageUrl, compressImage } from "../../lib/utils"
 import { useApi } from "../../hooks/useApi"
+
+function parsePhotos(photoUrl: string | null | undefined): string[] {
+  if (!photoUrl) return [];
+  if (photoUrl.startsWith('[') && photoUrl.endsWith(']')) {
+    try {
+      return JSON.parse(photoUrl);
+    } catch {
+      return [photoUrl];
+    }
+  }
+  return [photoUrl];
+}
 
 export function MeetingForm({ onSubmit, initialData, isDropdownItem, forceOpen, onClose }: { 
   onSubmit: (data: any) => Promise<boolean>, 
@@ -21,8 +33,8 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem, forceOpen, 
   const [open, setOpen] = useState(false)
   const [pending, setPending] = useState(false)
   
-  const [photoPreview, setPhotoPreview] = useState<string | null>(initialData?.photoUrl ? getImageUrl(initialData.photoUrl) : null)
-  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  // Lista de fotos con ID único, URL de previsualización y Archivo (File) si es nuevo
+  const [photosList, setPhotosList] = useState<{ id: string; url: string; file: File | null }[]>([])
   const [isDragging, setIsDragging] = useState(false)
   const [meetingType, setMeetingType] = useState<string>(initialData?.type || "GENERAL")
   const [preachers, setPreachers] = useState<string[]>([])
@@ -54,22 +66,25 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem, forceOpen, 
       loadPreachers();
       setErrorMsg(null);
       if (initialData) {
-        setPhotoPreview(initialData?.photoUrl ? getImageUrl(initialData.photoUrl) : null)
-        setPhotoFile(null)
+        const parsed = parsePhotos(initialData.photoUrl);
+        setPhotosList(parsed.map(url => ({ id: Math.random().toString(), url: getImageUrl(url), file: null })));
         setMeetingType(initialData.type || "GENERAL")
       } else {
-        setPhotoPreview(null)
-        setPhotoFile(null)
+        setPhotosList([])
         setMeetingType("GENERAL")
       }
     }
   }, [open, forceOpen, initialData])
 
-  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotosSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     setErrorMsg(null)
-    if (e.target.files && e.target.files[0]) {
-      setPhotoFile(e.target.files[0])
-      setPhotoPreview(URL.createObjectURL(e.target.files[0]))
+    if (e.target.files) {
+      const newPhotos = Array.from(e.target.files).map(file => ({
+        id: Math.random().toString(),
+        url: URL.createObjectURL(file),
+        file
+      }));
+      setPhotosList(prev => [...prev, ...newPhotos]);
     }
   }
 
@@ -77,13 +92,20 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem, forceOpen, 
     e.preventDefault()
     setIsDragging(false)
     setErrorMsg(null)
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0]
-      if (file.type.startsWith('image/')) {
-        setPhotoFile(file)
-        setPhotoPreview(URL.createObjectURL(file))
-      }
+    if (e.dataTransfer.files) {
+      const newPhotos = Array.from(e.dataTransfer.files)
+        .filter(file => file.type.startsWith('image/'))
+        .map(file => ({
+          id: Math.random().toString(),
+          url: URL.createObjectURL(file),
+          file
+        }));
+      setPhotosList(prev => [...prev, ...newPhotos]);
     }
+  }
+
+  const handleRemovePhoto = (id: string) => {
+    setPhotosList(prev => prev.filter(p => p.id !== id));
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -92,45 +114,54 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem, forceOpen, 
     setErrorMsg(null)
     const formData = new FormData(e.currentTarget)
     
-    let photoUrl = initialData?.photoUrl || null;
-    
-    // Si photoPreview fue limpiado por el usuario, quitar foto
-    if (photoPreview === null) {
-      photoUrl = null;
-    }
-    
-    // Subir imagen de reunión si se seleccionó una nueva
-    if (photoFile) {
-      const imgData = new FormData();
-      try {
-        const compressedFile = await compressImage(photoFile, 600, 400, 0.7);
-        imgData.append('image', compressedFile);
-        
-        const token = localStorage.getItem('token') || '';
-        const tokenVal = token.replace(/['"]+/g, '');
-        const uploadRes = await fetch(`${API_URL}/upload`, {
-          method: 'POST',
-          body: imgData,
-          headers: {
-            'Authorization': `Bearer ${tokenVal}`
+    const uploadedUrls: string[] = [];
+    const backendBase = API_URL.replace('/api', '');
+
+    // Procesar cada foto de la lista
+    for (const photo of photosList) {
+      if (photo.file) {
+        // Subir foto nueva
+        const imgData = new FormData();
+        try {
+          const compressedFile = await compressImage(photo.file, 800, 600, 0.8);
+          imgData.append('image', compressedFile);
+          
+          const token = localStorage.getItem('token') || '';
+          const tokenVal = token.replace(/['"]+/g, '');
+          const uploadRes = await fetch(`${API_URL}/upload`, {
+            method: 'POST',
+            body: imgData,
+            headers: {
+              'Authorization': `Bearer ${tokenVal}`
+            }
+          });
+          const uploadJson = await uploadRes.json();
+          
+          if (!uploadRes.ok) {
+            throw new Error(uploadJson.error || "No se pudo subir la imagen.");
           }
-        });
-        const uploadJson = await uploadRes.json();
-        
-        if (!uploadRes.ok) {
-          throw new Error(uploadJson.error || "No se pudo subir la imagen.");
+          
+          if (uploadJson.url) {
+            uploadedUrls.push(uploadJson.url);
+          }
+        } catch (err: any) {
+          console.error("Error al subir imagen de reunión", err);
+          setErrorMsg("Error al subir imagen: " + (err.message || "Por favor intente de nuevo."));
+          setPending(false);
+          return;
         }
-        
-        if (uploadJson.url) {
-           photoUrl = uploadJson.url;
+      } else {
+        // Mantener foto existente (limpiando prefijo del host local si está presente para guardar solo ruta relativa)
+        let url = photo.url;
+        if (url.startsWith(backendBase)) {
+          url = url.replace(backendBase, '');
         }
-      } catch (err: any) {
-        console.error("Error al subir imagen de reunión", err);
-        setErrorMsg("Error al subir la imagen: " + (err.message || "Por favor intente de nuevo."));
-        setPending(false);
-        return; // Detener el guardado si falla la subida de imagen
+        uploadedUrls.push(url);
       }
     }
+
+    // Convertir el arreglo a JSON o dejar en null si está vacío
+    const photoUrl = uploadedUrls.length > 0 ? JSON.stringify(uploadedUrls) : null;
 
     const data = {
       title: formData.get("title"),
@@ -150,14 +181,12 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem, forceOpen, 
     if (success) {
       setOpen(false)
       if (!initialData) {
-        setPhotoFile(null)
-        setPhotoPreview(null)
+        setPhotosList([])
       }
     }
     setPending(false)
   }
 
-  // In forceOpen mode, close handler uses onClose; otherwise use setOpen
   const handleClose = () => {
     if (forceOpen !== undefined) {
       onClose?.();
@@ -174,42 +203,53 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem, forceOpen, 
       <form onSubmit={handleSubmit}>
         <div className="grid gap-5 py-4">
           
-          {/* Portada de la Reunión con soporte Drag and Drop */}
-          <div className="flex flex-col items-center gap-3 p-4 border rounded-xl bg-muted/20">
-            <label 
+          {/* Portadas de la Reunión con soporte Drag and Drop y multi-fotos */}
+          <div className="flex flex-col gap-3 p-4 border rounded-xl bg-muted/20">
+            <Label className="text-xs text-muted-foreground uppercase font-semibold">Fotos / Flyers de la Reunión</Label>
+            
+            <div 
               onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
               onDragLeave={() => setIsDragging(false)}
               onDrop={handleDrop}
-              className={`w-full h-36 rounded-xl border-2 border-dashed flex flex-col items-center justify-center overflow-hidden cursor-pointer transition-all relative group ${
+              className={`w-full min-h-24 p-3 rounded-xl border-2 border-dashed flex flex-col justify-center transition-all ${
                 isDragging 
                   ? "border-primary bg-primary/10 scale-[1.02]" 
-                  : "border-border/50 bg-background/50 hover:bg-accent/50"
+                  : "border-border/50 bg-background/50"
               }`}
             >
-              <input type="file" className="hidden" accept="image/*" onChange={handlePhotoSelect} />
-              {photoPreview ? (
-                <>
-                  <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <span className="text-white text-sm font-medium flex items-center gap-2"><Upload className="w-4 h-4" /> Cambiar foto</span>
-                  </div>
-                </>
-              ) : (
-                <>
+              {photosList.length === 0 ? (
+                <label className="flex flex-col items-center justify-center cursor-pointer py-4 group">
+                  <input type="file" className="hidden" accept="image/*" multiple onChange={handlePhotosSelect} />
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
                     <ImageIcon className="w-5 h-5 text-primary" />
                   </div>
-                  <span className="text-sm text-foreground font-medium">Añadir foto o flyer</span>
-                  <span className="text-xs text-muted-foreground mt-1">Arrastra aquí o haz clic para subir</span>
-                  <span className="text-[10px] text-muted-foreground/60 mt-0.5">Recomendado: 16:9</span>
-                </>
+                  <span className="text-xs text-foreground font-medium">Añadir fotos o flyers (Ej. Flyer + Foto final)</span>
+                  <span className="text-[10px] text-muted-foreground mt-0.5">Arrastra o haz clic para seleccionar</span>
+                </label>
+              ) : (
+                <div className="grid grid-cols-3 gap-3">
+                  {photosList.map((photo) => (
+                    <div key={photo.id} className="relative h-24 rounded-lg overflow-hidden border border-white/10 shadow-md group">
+                      <img src={photo.url} alt="Preview" className="w-full h-full object-cover" />
+                      <button 
+                        type="button" 
+                        onClick={() => handleRemovePhoto(photo.id)}
+                        className="absolute top-1.5 right-1.5 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full transition-all cursor-pointer shadow-md"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                  
+                  {/* Botón para añadir más fotos */}
+                  <label className="h-24 rounded-lg border-2 border-dashed border-border/50 bg-background/50 hover:bg-accent/50 flex flex-col items-center justify-center cursor-pointer transition-colors">
+                    <input type="file" className="hidden" accept="image/*" multiple onChange={handlePhotosSelect} />
+                    <Plus className="w-5 h-5 text-muted-foreground" />
+                    <span className="text-[10px] text-muted-foreground font-medium mt-1">Añadir más</span>
+                  </label>
+                </div>
               )}
-            </label>
-            {photoPreview && (
-              <Button type="button" variant="ghost" size="sm" onClick={() => { setPhotoPreview(null); setPhotoFile(null); setErrorMsg(null); }} className="text-red-400 hover:text-red-500 hover:bg-red-500/10 cursor-pointer">
-                Quitar foto
-              </Button>
-            )}
+            </div>
           </div>
 
           {errorMsg && (
@@ -239,7 +279,6 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem, forceOpen, 
             </select>
           </div>
 
-          {/* Campos condicionales (siempre en DOM, visibilidad por CSS) */}
           <div className={`grid gap-5 ${meetingType === "GENERAL" ? "" : "hidden"}`}>
             <div className="grid gap-2">
               <Label htmlFor="preacher">¿Quién predicó?</Label>
@@ -303,7 +342,6 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem, forceOpen, 
     </DialogContent>
   )
 
-  // forceOpen mode: Dialog is controlled externally, no trigger needed
   if (forceOpen !== undefined) {
     return (
       <Dialog open={forceOpen} onOpenChange={(val) => { if (!val) onClose?.(); }}>

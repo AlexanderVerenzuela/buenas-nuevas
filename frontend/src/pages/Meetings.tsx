@@ -33,6 +33,31 @@ const statusMap: Record<string, { label: string; color: string }> = {
   CANCELLED: { label: "Cancelada", color: "bg-red-500/10 text-red-400 border-red-500/20" },
 }
 
+function getFirstPhoto(photoUrl: string | null | undefined): string | null {
+  if (!photoUrl) return null;
+  if (photoUrl.startsWith('[') && photoUrl.endsWith(']')) {
+    try {
+      const arr = JSON.parse(photoUrl);
+      return arr[0] || null;
+    } catch {
+      return photoUrl;
+    }
+  }
+  return photoUrl;
+}
+
+function getAllPhotos(photoUrl: string | null | undefined): string[] {
+  if (!photoUrl) return [];
+  if (photoUrl.startsWith('[') && photoUrl.endsWith(']')) {
+    try {
+      return JSON.parse(photoUrl);
+    } catch {
+      return [photoUrl];
+    }
+  }
+  return [photoUrl];
+}
+
 const getMeetingStatus = (meeting: any) => {
   if (meeting.status === 'CANCELLED') return 'CANCELLED';
   const meetingDate = new Date(meeting.date);
@@ -170,9 +195,9 @@ export default function Meetings() {
                   <TableRow key={meeting.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        {meeting.photoUrl && (
+                        {getFirstPhoto(meeting.photoUrl) && (
                           <img 
-                            src={getImageUrl(meeting.photoUrl)} 
+                            src={getImageUrl(getFirstPhoto(meeting.photoUrl))} 
                             alt="" 
                             className="w-10 h-10 rounded-lg object-cover flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
                             onClick={() => handleViewDetails(meeting)}
@@ -279,9 +304,9 @@ export default function Meetings() {
             return (
               <div key={meeting.id} className="rounded-xl border border-white/5 bg-card/40 backdrop-blur-xl shadow-lg overflow-hidden animate-in fade-in duration-200">
                 {/* Photo banner */}
-                {meeting.photoUrl && (
+                {getFirstPhoto(meeting.photoUrl) && (
                   <img 
-                    src={getImageUrl(meeting.photoUrl)} 
+                    src={getImageUrl(getFirstPhoto(meeting.photoUrl))} 
                     alt="" 
                     className="w-full h-28 object-cover cursor-pointer hover:opacity-90 transition-opacity"
                     onClick={() => handleViewDetails(meeting)}
@@ -383,17 +408,22 @@ export default function Meetings() {
           {selectedMeeting && (
             <div className="space-y-6">
               <div className="flex flex-col gap-4">
-                 {selectedMeeting.photoUrl && (
-                  <div 
-                    onClick={() => setZoomedPhoto(selectedMeeting.photoUrl)}
-                    className="relative w-full h-48 rounded-xl overflow-hidden shadow-lg border border-white/10 cursor-pointer group"
-                  >
-                    <img src={getImageUrl(selectedMeeting.photoUrl)} alt={selectedMeeting.title} className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300" />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
-                      <ZoomIn className="w-6 h-6 text-white" />
-                    </div>
-                  </div>
-                )}
+                 {getAllPhotos(selectedMeeting.photoUrl).length > 0 && (
+                   <div className={`grid gap-3 ${getAllPhotos(selectedMeeting.photoUrl).length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                     {getAllPhotos(selectedMeeting.photoUrl).map((photo, index) => (
+                       <div 
+                         key={index}
+                         onClick={() => setZoomedPhoto(photo)}
+                         className="relative w-full h-40 rounded-xl overflow-hidden shadow-lg border border-white/10 cursor-pointer group"
+                       >
+                         <img src={getImageUrl(photo)} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300" />
+                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
+                           <ZoomIn className="w-5 h-5 text-white" />
+                         </div>
+                       </div>
+                     ))}
+                   </div>
+                 )}
                 <div>
                   <DialogTitle className="text-2xl font-bold tracking-tight text-foreground">{selectedMeeting.title}</DialogTitle>
                   <p className="text-xs text-muted-foreground mt-1">Detalles de la reunión y resumen de asistencia</p>

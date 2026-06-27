@@ -6,6 +6,19 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeft, ZoomIn, X } from "lucide-react"
 import { getImageUrl } from '../lib/utils';
 
+function getFirstPhoto(photoUrl: string | null | undefined): string | null {
+  if (!photoUrl) return null;
+  if (photoUrl.startsWith('[') && photoUrl.endsWith(']')) {
+    try {
+      const arr = JSON.parse(photoUrl);
+      return arr[0] || null;
+    } catch {
+      return photoUrl;
+    }
+  }
+  return photoUrl;
+}
+
 export default function Attendance() {
   const { meetingId } = useParams();
   const [meeting, setMeeting] = useState<any>(null);
@@ -47,12 +60,12 @@ export default function Attendance() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
-        {getImageUrl(meeting.photoUrl) && (
+        {getFirstPhoto(meeting.photoUrl) && (
           <div 
-            onClick={() => setZoomedPhoto(meeting.photoUrl)}
+            onClick={() => setZoomedPhoto(getFirstPhoto(meeting.photoUrl))}
             className="relative z-10 w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden shadow-lg group cursor-pointer border-2 border-white/10 hover:border-white/30 transition-all flex-shrink-0"
           >
-            <img src={getImageUrl(meeting.photoUrl)} alt={meeting.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+            <img src={getImageUrl(getFirstPhoto(meeting.photoUrl))} alt={meeting.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
               <ZoomIn className="text-white w-5 h-5 sm:w-6 sm:h-6 drop-shadow-md" />
             </div>
