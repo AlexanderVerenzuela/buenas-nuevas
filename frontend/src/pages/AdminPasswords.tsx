@@ -150,7 +150,7 @@ export default function AdminPasswords() {
                 </Badge>
               </div>
               <div className="border-t border-white/5 pt-3 mt-1 flex justify-end">
-                <Button 
+                <button 
                   onClick={() => {
                     setSelectedUser(u)
                     setUsername(u.email)
@@ -161,10 +161,10 @@ export default function AdminPasswords() {
                     setShowPassword(false)
                     setShowCurrentPassword(false)
                   }}
-                  className="bg-primary/10 border border-primary/30 text-primary hover:bg-primary hover:text-white transition-all duration-200 text-xs w-full py-2.5 h-auto cursor-pointer hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1.5 rounded-xl font-medium"
+                  className="bg-primary/10 border border-primary/30 text-primary hover:bg-primary hover:text-black transition-all duration-200 text-xs w-full py-2.5 h-auto cursor-pointer hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1.5 rounded-xl font-medium"
                 >
                   <Settings className="w-3.5 h-3.5" /> Editar Acceso
-                </Button>
+                </button>
               </div>
             </div>
           ))
@@ -219,7 +219,7 @@ export default function AdminPasswords() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button 
+                    <button 
                       onClick={() => {
                         setSelectedUser(u)
                         setUsername(u.email)
@@ -230,10 +230,10 @@ export default function AdminPasswords() {
                         setShowPassword(false)
                         setShowCurrentPassword(false)
                       }}
-                      className="bg-primary/10 border border-primary/30 text-primary hover:bg-primary hover:text-white transition-all duration-200 text-xs cursor-pointer hover:scale-105 active:scale-95 flex items-center gap-1.5 px-4 py-2 rounded-xl font-medium"
+                      className="bg-primary/10 border border-primary/30 text-primary hover:bg-primary hover:text-black transition-all duration-200 text-xs cursor-pointer hover:scale-105 active:scale-95 flex items-center gap-1.5 px-4 py-2 rounded-xl font-medium"
                     >
                       <Settings className="w-3.5 h-3.5" /> Editar Acceso
-                    </Button>
+                    </button>
                   </TableCell>
                 </TableRow>
               ))
