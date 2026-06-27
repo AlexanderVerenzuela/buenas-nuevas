@@ -151,8 +151,6 @@ export default function AdminPasswords() {
               </div>
               <div className="border-t border-white/5 pt-3 mt-1 flex justify-end">
                 <Button 
-                  variant="outline" 
-                  size="sm" 
                   onClick={() => {
                     setSelectedUser(u)
                     setUsername(u.email)
@@ -163,9 +161,9 @@ export default function AdminPasswords() {
                     setShowPassword(false)
                     setShowCurrentPassword(false)
                   }}
-                  className="bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 hover:text-primary transition-all text-xs w-full py-2 h-auto"
+                  className="bg-primary/10 border border-primary/30 text-primary hover:bg-primary hover:text-white transition-all duration-200 text-xs w-full py-2.5 h-auto cursor-pointer hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1.5 rounded-xl font-medium"
                 >
-                  <Settings className="w-3.5 h-3.5 mr-1.5" /> Editar Acceso
+                  <Settings className="w-3.5 h-3.5" /> Editar Acceso
                 </Button>
               </div>
             </div>
@@ -222,8 +220,6 @@ export default function AdminPasswords() {
                   </TableCell>
                   <TableCell className="text-right">
                     <Button 
-                      variant="outline" 
-                      size="sm" 
                       onClick={() => {
                         setSelectedUser(u)
                         setUsername(u.email)
@@ -234,7 +230,7 @@ export default function AdminPasswords() {
                         setShowPassword(false)
                         setShowCurrentPassword(false)
                       }}
-                      className="bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 hover:text-primary transition-all text-xs"
+                      className="bg-primary/10 border border-primary/30 text-primary hover:bg-primary hover:text-white transition-all duration-200 text-xs cursor-pointer hover:scale-105 active:scale-95 flex items-center gap-1.5 px-4 py-2 rounded-xl font-medium"
                     >
                       <Settings className="w-3.5 h-3.5" /> Editar Acceso
                     </Button>
