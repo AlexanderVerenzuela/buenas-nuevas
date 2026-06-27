@@ -23,6 +23,7 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem, forceOpen, 
   
   const [photoPreview, setPhotoPreview] = useState<string | null>(initialData?.photoUrl ? getImageUrl(initialData.photoUrl) : null)
   const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
   const [meetingType, setMeetingType] = useState<string>(initialData?.type || "GENERAL")
   const [preachers, setPreachers] = useState<string[]>([])
   
@@ -69,12 +70,29 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem, forceOpen, 
     }
   }
 
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0]
+      if (file.type.startsWith('image/')) {
+        setPhotoFile(file)
+        setPhotoPreview(URL.createObjectURL(file))
+      }
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setPending(true)
     const formData = new FormData(e.currentTarget)
     
     let photoUrl = initialData?.photoUrl || null;
+    
+    // Si photoPreview fue limpiado por el usuario, quitar foto
+    if (photoPreview === null) {
+      photoUrl = null;
+    }
     
     // Subir imagen de reunión si se seleccionó una nueva
     if (photoFile) {
@@ -143,9 +161,18 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem, forceOpen, 
       <form onSubmit={handleSubmit}>
         <div className="grid gap-5 py-4">
           
-          {/* Portada de la Reunión */}
+          {/* Portada de la Reunión con soporte Drag and Drop */}
           <div className="flex flex-col items-center gap-3 p-4 border rounded-xl bg-muted/20">
-            <label className="w-full h-36 rounded-xl border-2 border-dashed border-border/50 bg-background/50 flex flex-col items-center justify-center overflow-hidden cursor-pointer hover:bg-accent/50 transition-colors relative group">
+            <label 
+              onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={handleDrop}
+              className={`w-full h-36 rounded-xl border-2 border-dashed flex flex-col items-center justify-center overflow-hidden cursor-pointer transition-all relative group ${
+                isDragging 
+                  ? "border-primary bg-primary/10 scale-[1.02]" 
+                  : "border-border/50 bg-background/50 hover:bg-accent/50"
+              }`}
+            >
               <input type="file" className="hidden" accept="image/*" onChange={handlePhotoSelect} />
               {photoPreview ? (
                 <>
@@ -160,12 +187,13 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem, forceOpen, 
                     <ImageIcon className="w-5 h-5 text-primary" />
                   </div>
                   <span className="text-sm text-foreground font-medium">Añadir foto o flyer</span>
-                  <span className="text-xs text-muted-foreground mt-1">Recomendado: 16:9</span>
+                  <span className="text-xs text-muted-foreground mt-1">Arrastra aquí o haz clic para subir</span>
+                  <span className="text-[10px] text-muted-foreground/60 mt-0.5">Recomendado: 16:9</span>
                 </>
               )}
             </label>
             {photoPreview && (
-              <Button type="button" variant="ghost" size="sm" onClick={() => { setPhotoPreview(null); setPhotoFile(null); }} className="text-red-400 hover:text-red-500 hover:bg-red-500/10">
+              <Button type="button" variant="ghost" size="sm" onClick={() => { setPhotoPreview(null); setPhotoFile(null); }} className="text-red-400 hover:text-red-500 hover:bg-red-500/10 cursor-pointer">
                 Quitar foto
               </Button>
             )}
@@ -247,7 +275,7 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem, forceOpen, 
         </div>
         <DialogFooter className="pt-2">
           <Button type="button" variant="ghost" onClick={handleClose}>Cancelar</Button>
-          <Button type="submit" disabled={pending} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 rounded-xl px-6">
+          <Button type="submit" disabled={pending} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 rounded-xl px-6 cursor-pointer">
             {pending ? "Guardando..." : "Guardar Reunión"}
           </Button>
         </DialogFooter>
@@ -271,9 +299,9 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem, forceOpen, 
           isDropdownItem ? (
             <Button variant="ghost" className="w-full justify-start gap-2 h-9 px-3 text-sm font-normal text-foreground hover:bg-accent hover:text-accent-foreground rounded-md border-none cursor-pointer focus:bg-accent focus:text-accent-foreground" />
           ) : initialData ? (
-            <Button variant="ghost" size="sm" className="text-blue-500 hover:text-blue-600 hover:bg-blue-500/10 h-8 px-2" />
+            <Button variant="ghost" size="sm" className="text-blue-500 hover:text-blue-600 hover:bg-blue-500/10 h-8 px-2 cursor-pointer" />
           ) : (
-            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 rounded-xl" />
+            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 rounded-xl cursor-pointer" />
           )
         }
       >
@@ -289,4 +317,3 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem, forceOpen, 
     </Dialog>
   )
 }
-

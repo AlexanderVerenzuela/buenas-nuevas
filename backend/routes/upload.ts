@@ -9,7 +9,7 @@ const storage = multer.memoryStorage();
 
 const upload = multer({ 
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // Límite de 5MB
+  limits: { fileSize: 50 * 1024 * 1024 }, // Límite de 50MB
   fileFilter: (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|webp/i;
     const isMimeTypeValid = allowedTypes.test(file.mimetype);
