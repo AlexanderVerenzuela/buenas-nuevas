@@ -106,11 +106,34 @@ export default function Groups() {
     }
   };
 
-  // Filtrar la lista de jóvenes por búsqueda
-  const filteredYouths = allYouths.filter(y => {
-    const fullName = `${y.firstName} ${y.lastName || ''}`.toLowerCase();
-    return fullName.includes(searchQuery.toLowerCase());
-  });
+  const statusLabels: Record<string, string> = {
+    VISITOR: "Visita",
+    NEW: "Nuevo",
+    MEMBER: "Miembro",
+    LEADER: "Líder",
+    PREACHING: "Prédica",
+    FAMILY: "Familiar",
+    INACTIVE: "Inactivo",
+    COMMISSION: "Comisión"
+  };
+
+  // Filtrar la lista de jóvenes por búsqueda y ordenar seleccionados primero, luego alfabéticamente
+  const filteredYouths = allYouths
+    .filter(y => {
+      const fullName = `${y.firstName} ${y.lastName || ''}`.toLowerCase();
+      return fullName.includes(searchQuery.toLowerCase());
+    })
+    .sort((a, b) => {
+      const aSelected = selectedYouthIds.includes(a.id);
+      const bSelected = selectedYouthIds.includes(b.id);
+      
+      if (aSelected && !bSelected) return -1;
+      if (!aSelected && bSelected) return 1;
+      
+      const nameA = `${a.firstName} ${a.lastName || ''}`.toLowerCase();
+      const nameB = `${b.firstName} ${b.lastName || ''}`.toLowerCase();
+      return nameA.localeCompare(nameB, 'es', { sensitivity: 'base' });
+    });
 
   if (loading) return (
     <div className="flex items-center justify-center h-48">
@@ -280,7 +303,7 @@ export default function Groups() {
                         </div>
                         <div>
                           <p className="text-sm font-semibold">{youth.firstName} {youth.lastName}</p>
-                          <p className="text-[10px] text-muted-foreground uppercase font-semibold">Estado: {youth.status}</p>
+                          <p className="text-[10px] text-muted-foreground uppercase font-semibold">Estado: {statusLabels[youth.status] || youth.status}</p>
                         </div>
                       </div>
                       
