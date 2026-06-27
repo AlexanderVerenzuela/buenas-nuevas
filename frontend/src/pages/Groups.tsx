@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Users, Search, X } from "lucide-react"
-import { getImageUrl } from '../lib/utils';
+import { getImageUrl, normalizeText } from '../lib/utils';
 
 export default function Groups() {
   const [groups, setGroups] = useState<any[]>([]);
@@ -30,12 +30,30 @@ export default function Groups() {
         request('/leaders'),
         request('/youth')
       ]);
-      setGroups(groupsData || []);
-      setAllYouths(youthsData || []);
+      // Ordenar grupos alfabéticamente sin importar tildes
+      const sortedGroups = (groupsData || []).sort((a: any, b: any) => {
+        const nameA = normalizeText(a.name || '');
+        const nameB = normalizeText(b.name || '');
+        return nameA.localeCompare(nameB, 'es');
+      });
+      setGroups(sortedGroups);
       
-      // Filtrar líderes que no tienen un grupo asignado aún
+      // Ordenar jóvenes alfabéticamente sin importar tildes por defecto
+      const sortedYouths = (youthsData || []).sort((a: any, b: any) => {
+        const nameA = normalizeText(`${a.firstName} ${a.lastName || ''}`);
+        const nameB = normalizeText(`${b.firstName} ${b.lastName || ''}`);
+        return nameA.localeCompare(nameB, 'es');
+      });
+      setAllYouths(sortedYouths);
+      
+      // Ordenar líderes y filtrar los que no tienen un grupo asignado
+      const sortedLeaders = (leadersData || []).sort((a: any, b: any) => {
+        const nameA = normalizeText(`${a.firstName} ${a.lastName || ''}`);
+        const nameB = normalizeText(`${b.firstName} ${b.lastName || ''}`);
+        return nameA.localeCompare(nameB, 'es');
+      });
       const assignedIds = (groupsData || []).map((g: any) => g.leaderId).filter(Boolean);
-      const available = (leadersData || []).filter((l: any) => !assignedIds.includes(l.id));
+      const available = sortedLeaders.filter((l: any) => !assignedIds.includes(l.id));
       setLeaders(available);
     } catch (error) {
       console.error(error);
@@ -120,8 +138,9 @@ export default function Groups() {
   // Filtrar la lista de jóvenes por búsqueda y ordenar seleccionados primero, luego alfabéticamente
   const filteredYouths = allYouths
     .filter(y => {
-      const fullName = `${y.firstName} ${y.lastName || ''}`.toLowerCase();
-      return fullName.includes(searchQuery.toLowerCase());
+      const fullName = normalizeText(`${y.firstName} ${y.lastName || ''}`);
+      const query = normalizeText(searchQuery);
+      return fullName.includes(query);
     })
     .sort((a, b) => {
       const aSelected = selectedYouthIds.includes(a.id);
@@ -130,9 +149,9 @@ export default function Groups() {
       if (aSelected && !bSelected) return -1;
       if (!aSelected && bSelected) return 1;
       
-      const nameA = `${a.firstName} ${a.lastName || ''}`.toLowerCase();
-      const nameB = `${b.firstName} ${b.lastName || ''}`.toLowerCase();
-      return nameA.localeCompare(nameB, 'es', { sensitivity: 'base' });
+      const nameA = normalizeText(`${a.firstName} ${a.lastName || ''}`);
+      const nameB = normalizeText(`${b.firstName} ${b.lastName || ''}`);
+      return nameA.localeCompare(nameB, 'es');
     });
 
   if (loading) return (
@@ -153,7 +172,8 @@ export default function Groups() {
         <GroupForm availableLeaders={leaders} onSubmit={handleCreate} />
       </div>
 
-      <div className="rounded-xl border border-white/5 bg-card/40 backdrop-blur-xl shadow-2xl overflow-x-auto">
+      {/* Desktop: Table view */}
+      <div className="hidden md:block rounded-xl border border-white/5 bg-card/40 backdrop-blur-xl shadow-2xl overflow-x-auto">
         <Table>
           <TableHeader className="bg-muted/30">
             <TableRow>
@@ -245,6 +265,83 @@ export default function Groups() {
         </Table>
       </div>
 
+      {/* Mobile: Card view */}
+      <div className="md:hidden space-y-4">
+        {groups.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground rounded-xl border border-white/5 bg-card/40 backdrop-blur-xl">
+            No hay líderes de discipulado asignados.
+          </div>
+        ) : (
+          groups.map((group: any) => (
+            <div key={group.id} className="rounded-xl border border-white/5 bg-card/40 backdrop-blur-xl shadow-lg p-4 space-y-4 animate-in fade-in duration-200">
+              
+              {/* Leader info header */}
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 flex-shrink-0 bg-muted">
+                    {(() => {
+                      const leaderYouth = allYouths.find(y => y.id === group.leader.youthId);
+                      const avatar = leaderYouth?.avatarUrl || group.leader.avatarUrl;
+                      return avatar ? (
+                        <img src={getImageUrl(avatar)} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-500/20 to-purple-500/20 text-indigo-400 font-bold uppercase text-sm">
+                          {group.leader.firstName[0]}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-foreground text-sm">
+                      {group.leader ? `${group.leader.firstName} ${group.leader.lastName}` : "Sin líder"}
+                    </h4>
+                    <span className="text-[10px] text-muted-foreground uppercase font-semibold">Líder</span>
+                  </div>
+                </div>
+                
+                {/* Total youth badge */}
+                <Badge variant={group.members?.length > 0 ? "default" : "outline"} className="shadow-sm text-xs">
+                  {group.members?.length || 0} jóvenes
+                </Badge>
+              </div>
+
+              {/* Members tag list */}
+              <div className="space-y-1.5 pt-1">
+                <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">Jóvenes a Cargo</p>
+                <div className="flex flex-wrap gap-1">
+                  {group.members && group.members.length > 0 ? (
+                    group.members.map((member: any) => (
+                      <Badge key={member.id} variant="secondary" className="bg-muted/50 text-foreground border-white/5 py-0.5 px-2 text-[10px]">
+                        {member.firstName} {member.lastName}
+                      </Badge>
+                    ))
+                  ) : (
+                    <span className="text-xs text-muted-foreground italic">Ningún joven asignado</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex items-center gap-2 pt-3 border-t border-white/5 w-full">
+                <button 
+                  onClick={() => handleOpenAssignModal(group)} 
+                  className="flex-1 text-xs font-semibold text-primary hover:underline cursor-pointer flex items-center justify-center gap-1 bg-primary/10 hover:bg-primary/20 py-2.5 px-3 rounded-xl border border-primary/20 transition-all"
+                >
+                  <Users className="w-3.5 h-3.5" /> Asignar Jóvenes
+                </button>
+                <button 
+                  onClick={() => handleDelete(group.id)} 
+                  className="text-xs font-semibold text-red-400 hover:text-red-500 hover:bg-red-500/10 py-2.5 px-4 rounded-xl cursor-pointer transition-all border border-transparent"
+                >
+                  Eliminar
+                </button>
+              </div>
+
+            </div>
+          ))
+        )}
+      </div>
+
       {/* Modal para asignar jóvenes a un líder */}
       {assigningGroup && (
         <Dialog open={!!assigningGroup} onOpenChange={(open) => !open && setAssigningGroup(null)}>
@@ -303,7 +400,14 @@ export default function Groups() {
                         </div>
                         <div>
                           <p className="text-sm font-semibold">{youth.firstName} {youth.lastName}</p>
-                          <p className="text-[10px] text-muted-foreground uppercase font-semibold">Estado: {statusLabels[youth.status] || youth.status}</p>
+                          <p className="text-[10px] text-muted-foreground uppercase font-semibold flex flex-wrap items-center gap-1.5">
+                            <span>Estado: {statusLabels[youth.status] || youth.status}</span>
+                            {youth.groupId && youth.groupId !== assigningGroup.id && youth.leader && (
+                              <span className="text-amber-500/90 dark:text-amber-400 normal-case font-semibold bg-amber-500/10 py-0.5 px-1.5 rounded-md border border-amber-500/10">
+                                Asignado a: {youth.leader.firstName} {youth.leader.lastName}
+                              </span>
+                            )}
+                          </p>
                         </div>
                       </div>
                       
