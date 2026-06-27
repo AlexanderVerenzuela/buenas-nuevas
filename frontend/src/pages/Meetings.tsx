@@ -393,7 +393,7 @@ export default function Meetings() {
                       </div>
                     </DialogTrigger>
                     <DialogContent showCloseButton={false} className="fixed inset-0 !top-0 !left-0 !translate-x-0 !translate-y-0 max-w-none w-screen h-screen bg-black/90 flex items-center justify-center p-4 rounded-none border-none ring-0 focus-visible:ring-0 cursor-zoom-out z-[9999]">
-                      <DialogClose className="w-full h-full flex items-center justify-center relative outline-none cursor-zoom-out">
+                      <DialogClose render={<div className="w-full h-full flex items-center justify-center relative outline-none cursor-zoom-out" />}>
                         <div className="absolute top-4 right-4 p-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 text-white transition-all cursor-pointer shadow-lg z-50">
                           <X className="w-5 h-5" />
                         </div>
