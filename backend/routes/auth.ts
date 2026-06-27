@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { db } from '../db';
 import { users, leaders, youths } from '../db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and, ne } from 'drizzle-orm';
 
 const router = express.Router();
 
@@ -99,24 +99,44 @@ router.get('/users', authenticateToken, async (req: AuthRequest, res) => {
   }
 });
 
-// Cambiar contraseña de cualquier usuario (solo administradores)
-router.put('/users/:id/password', authenticateToken, async (req: AuthRequest, res) => {
+// Actualizar datos de usuario (nombre de usuario/email y opcionalmente contraseña) - Solo administradores
+router.put('/users/:id', authenticateToken, async (req: AuthRequest, res) => {
   try {
     if (req.user?.role !== 'ADMIN') {
       return res.status(403).json({ error: 'Acceso denegado. Se requieren permisos de administrador.' });
     }
 
     const { id } = req.params;
-    const { password } = req.body;
+    const { username, password } = req.body;
 
-    if (!password || password.length < 4) {
-      return res.status(400).json({ error: 'La contraseña debe tener al menos 4 caracteres.' });
+    if (!username || username.trim().length < 3) {
+      return res.status(400).json({ error: 'El nombre de usuario debe tener al menos 3 caracteres.' });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const normalizedUser = username.trim().toLowerCase();
+
+    // Verificar si el nombre de usuario ya existe en otro usuario
+    const existing = await db.query.users.findFirst({
+      where: and(eq(users.email, normalizedUser), ne(users.id, id))
+    });
+
+    if (existing) {
+      return res.status(400).json({ error: 'Este nombre de usuario ya está en uso.' });
+    }
+
+    const updateData: any = {
+      email: normalizedUser,
+      updatedAt: new Date()
+    };
+
+    if (password && password.trim().length >= 4) {
+      updateData.password = await bcrypt.hash(password.trim(), 10);
+    } else if (password && password.trim().length > 0) {
+      return res.status(400).json({ error: 'La nueva contraseña debe tener al menos 4 caracteres.' });
+    }
 
     const updatedUser = await db.update(users)
-      .set({ password: hashedPassword, updatedAt: new Date() })
+      .set(updateData)
       .where(eq(users.id, id))
       .returning({ id: users.id });
 
@@ -124,10 +144,10 @@ router.put('/users/:id/password', authenticateToken, async (req: AuthRequest, re
       return res.status(404).json({ error: 'Usuario no encontrado.' });
     }
 
-    res.json({ success: true, message: 'Contraseña actualizada correctamente.' });
+    res.json({ success: true, message: 'Usuario actualizado correctamente.' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error al actualizar la contraseña.' });
+    res.status(500).json({ error: 'Error al actualizar el usuario.' });
   }
 });
 
