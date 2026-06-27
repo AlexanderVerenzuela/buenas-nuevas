@@ -3,7 +3,7 @@ import { useApi } from '../hooks/useApi';
 import { useParams, Link } from 'react-router-dom';
 import { AttendanceTableClient } from '../components/modules/AttendanceTableClient';
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, ZoomIn } from "lucide-react"
+import { ArrowLeft, ZoomIn, X } from "lucide-react"
 import { getImageUrl } from '../lib/utils';
 import { Dialog, DialogContent, DialogTrigger, DialogClose } from "@/components/ui/dialog"
 
@@ -55,9 +55,12 @@ export default function Attendance() {
                 <ZoomIn className="text-white w-5 h-5 sm:w-6 sm:h-6 drop-shadow-md" />
               </div>
             </DialogTrigger>
-            <DialogContent showCloseButton={false} className="sm:max-w-none max-w-[90vw] h-[90vh] p-0 bg-transparent border-none shadow-none flex items-center justify-center">
-              <DialogClose className="cursor-zoom-out w-full h-full flex items-center justify-center outline-none">
-                <img src={getImageUrl(meeting.photoUrl)} alt={meeting.title} className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl border border-white/10" />
+            <DialogContent showCloseButton={false} className="fixed inset-0 translate-x-0 translate-y-0 max-w-none w-screen h-screen bg-black/90 flex items-center justify-center p-4 rounded-none border-none ring-0 focus-visible:ring-0 cursor-zoom-out z-[9999]">
+              <DialogClose className="w-full h-full flex items-center justify-center relative outline-none cursor-zoom-out">
+                <div className="absolute top-4 right-4 p-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 text-white transition-all cursor-pointer shadow-lg z-50">
+                  <X className="w-5 h-5" />
+                </div>
+                <img src={getImageUrl(meeting.photoUrl)} alt={meeting.title} className="max-w-[95vw] max-h-[90vh] object-contain rounded-2xl shadow-2xl border border-white/5 cursor-zoom-out" />
               </DialogClose>
             </DialogContent>
           </Dialog>

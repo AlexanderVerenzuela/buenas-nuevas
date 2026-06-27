@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogTrigger, DialogClose } from '@/components/ui/dialog';
-import { ArrowLeft, Save, Briefcase, GraduationCap, CalendarDays, Phone, ZoomIn } from 'lucide-react';
+import { ArrowLeft, Save, Briefcase, GraduationCap, CalendarDays, Phone, ZoomIn, X } from 'lucide-react';
 import { EditYouthForm } from '../components/modules/EditYouthForm';
 import { getImageUrl } from '../lib/utils';
 
@@ -96,9 +96,12 @@ export default function YouthProfile() {
                       <ZoomIn className="w-6 h-6 text-white" />
                     </div>
                   </DialogTrigger>
-                  <DialogContent showCloseButton={false} className="max-w-3xl sm:max-w-none bg-transparent border-none shadow-none flex items-center justify-center p-0">
-                    <DialogClose className="cursor-zoom-out w-full h-full flex items-center justify-center outline-none">
-                      <img src={getImageUrl(profile.avatarUrl)} alt="Avatar Zoom" className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl border border-white/10" />
+                  <DialogContent showCloseButton={false} className="fixed inset-0 translate-x-0 translate-y-0 max-w-none w-screen h-screen bg-black/90 flex items-center justify-center p-4 rounded-none border-none ring-0 focus-visible:ring-0 cursor-zoom-out z-[9999]">
+                    <DialogClose className="w-full h-full flex items-center justify-center relative outline-none cursor-zoom-out">
+                      <div className="absolute top-4 right-4 p-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 text-white transition-all cursor-pointer shadow-lg z-50">
+                        <X className="w-5 h-5" />
+                      </div>
+                      <img src={getImageUrl(profile.avatarUrl)} alt="Avatar Zoom" className="max-w-[95vw] max-h-[90vh] object-contain rounded-2xl shadow-2xl border border-white/5 cursor-zoom-out" />
                     </DialogClose>
                   </DialogContent>
                 </Dialog>
