@@ -65,7 +65,10 @@ export function EditLeaderForm({ leader }: { leader: any }) {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="isActive">Estado</Label>
-                <Select name="isActive" defaultValue={leader.isActive ? "true" : "false"}>
+                <Select name="isActive" defaultValue={leader.isActive ? "true" : "false"} items={[
+                  { value: "true", label: "Activo" },
+                  { value: "false", label: "Inactivo" }
+                ]}>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccione..." />
                   </SelectTrigger>

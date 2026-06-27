@@ -67,7 +67,14 @@ export function YouthForm({ onSubmit }: { onSubmit: (data: any) => Promise<{ err
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="status">Estado Inicial</Label>
-                <Select name="status" required>
+                <Select name="status" required items={[
+                  { value: "VISITOR", label: "Visita" },
+                  { value: "NEW", label: "Nuevo" },
+                  { value: "MEMBER", label: "Miembro" },
+                  { value: "LEADER", label: "Líder" },
+                  { value: "PREACHING", label: "Prédica" },
+                  { value: "FAMILY", label: "Familiar" }
+                ]}>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccione..." />
                   </SelectTrigger>

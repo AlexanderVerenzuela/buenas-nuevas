@@ -168,7 +168,15 @@ export function EditYouthForm({ youth }: { youth: any }) {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="status">Estado</Label>
-                <Select name="status" defaultValue={youth.status}>
+                <Select name="status" defaultValue={youth.status} items={[
+                  { value: "VISITOR", label: "Visita" },
+                  { value: "NEW", label: "Nuevo" },
+                  { value: "MEMBER", label: "Miembro" },
+                  { value: "LEADER", label: "Líder" },
+                  { value: "PREACHING", label: "Prédica" },
+                  { value: "FAMILY", label: "Familiar" },
+                  { value: "INACTIVE", label: "Inactivo" }
+                ]}>
                   <SelectTrigger><SelectValue placeholder="Seleccione..." /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="VISITOR">Visita</SelectItem>

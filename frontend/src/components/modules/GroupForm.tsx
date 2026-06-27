@@ -44,7 +44,7 @@ export function GroupForm({ availableLeaders, onSubmit }: { availableLeaders: Le
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="leaderId" className="text-sm font-medium">Líder de Discipulado</Label>
-              <Select name="leaderId" required>
+              <Select name="leaderId" required items={availableLeaders.map(l => ({ value: l.id, label: `${l.firstName} ${l.lastName}` }))}>
                 <SelectTrigger className="bg-background/50">
                   <SelectValue placeholder="Selecciona un líder" />
                 </SelectTrigger>
