@@ -13,7 +13,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { href: "/", label: "Dashboard", icon: Home },
   { href: "/youth", label: "Jóvenes", icon: Users },
-  { href: "/groups", label: "Grupos", icon: Users2 },
+  { href: "/groups", label: "Discipulado", icon: Users2 },
   { href: "/meetings", label: "Reuniones", icon: CalendarDays },
   { href: "/reports", label: "Reportes", icon: FileBarChart },
   { href: "/birthdays", label: "Cumpleaños", icon: Gift },
