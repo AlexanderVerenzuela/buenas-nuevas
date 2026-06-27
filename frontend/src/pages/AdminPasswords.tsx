@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Search, ShieldAlert, CheckCircle2, Lock, User } from "lucide-react"
+import { Search, ShieldAlert, CheckCircle2, Lock, Eye, EyeOff } from "lucide-react"
+import { getImageUrl } from "../lib/utils"
 
 export default function AdminPasswords() {
   const { request } = useApi()
@@ -18,6 +19,7 @@ export default function AdminPasswords() {
   // Modal states
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
   const [modalLoading, setModalLoading] = useState(false)
   const [modalError, setModalError] = useState("")
   const [modalSuccess, setModalSuccess] = useState("")
@@ -131,8 +133,16 @@ export default function AdminPasswords() {
               filteredUsers.map((u) => (
                 <TableRow key={u.id}>
                   <TableCell className="font-medium py-3.5">
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-primary" />
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full overflow-hidden bg-muted flex items-center justify-center border border-white/10 flex-shrink-0">
+                        {getImageUrl(u.avatarUrl) ? (
+                          <img src={getImageUrl(u.avatarUrl)} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-500/20 to-purple-500/20 text-indigo-400 text-xs font-bold uppercase">
+                            {u.name ? u.name[0] : (u.email ? u.email[0] : 'U')}
+                          </div>
+                        )}
+                      </div>
                       <span>{u.name || "Sin Nombre"}</span>
                     </div>
                   </TableCell>
@@ -157,6 +167,7 @@ export default function AdminPasswords() {
                         setModalSuccess("")
                         setNewPassword("")
                         setConfirmPassword("")
+                        setShowPassword(false)
                       }}
                       className="bg-card hover:bg-primary hover:text-primary-foreground gap-1.5 transition-all text-xs"
                     >
@@ -189,28 +200,39 @@ export default function AdminPasswords() {
 
               <div className="space-y-2">
                 <Label htmlFor="adminNewPassword">Nueva Contraseña</Label>
-                <Input 
-                  id="adminNewPassword"
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Mínimo 4 caracteres"
-                  required
-                  className="bg-background/50 rounded-xl"
-                />
+                <div className="relative">
+                  <Input 
+                    id="adminNewPassword"
+                    type={showPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Mínimo 4 caracteres"
+                    required
+                    className="bg-background/50 rounded-xl pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="adminConfirmPassword">Confirmar Contraseña</Label>
-                <Input 
-                  id="adminConfirmPassword"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirma la contraseña"
-                  required
-                  className="bg-background/50 rounded-xl"
-                />
+                <div className="relative">
+                  <Input 
+                    id="adminConfirmPassword"
+                    type={showPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirma la contraseña"
+                    required
+                    className="bg-background/50 rounded-xl pr-10"
+                  />
+                </div>
               </div>
 
               {modalError && (

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { KeyRound, ShieldAlert, CheckCircle2 } from "lucide-react"
+import { KeyRound, ShieldAlert, CheckCircle2, Eye, EyeOff } from "lucide-react"
 
 export default function Profile() {
   const { user } = useAuth()
@@ -13,6 +13,7 @@ export default function Profile() {
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
@@ -89,10 +90,20 @@ export default function Profile() {
             <hr className="border-white/5 my-4" />
 
             <div className="space-y-2">
-              <Label htmlFor="currentPassword">Contraseña Actual</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="currentPassword">Contraseña Actual</Label>
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1.5"
+                >
+                  {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  <span>{showPassword ? "Ocultar" : "Mostrar"}</span>
+                </button>
+              </div>
               <Input
                 id="currentPassword"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 placeholder="Ingresa tu contraseña actual"
@@ -105,7 +116,7 @@ export default function Profile() {
               <Label htmlFor="newPassword">Nueva Contraseña</Label>
               <Input
                 id="newPassword"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="Mínimo 4 caracteres"
@@ -118,7 +129,7 @@ export default function Profile() {
               <Label htmlFor="confirmPassword">Confirmar Nueva Contraseña</Label>
               <Input
                 id="confirmPassword"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirma tu nueva contraseña"

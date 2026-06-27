@@ -2,7 +2,7 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { db } from '../db';
-import { users } from '../db/schema';
+import { users, leaders, youths } from '../db/schema';
 import { eq } from 'drizzle-orm';
 
 const router = express.Router();
@@ -79,10 +79,18 @@ router.get('/users', authenticateToken, async (req: AuthRequest, res) => {
       return res.status(403).json({ error: 'Acceso denegado. Se requieren permisos de administrador.' });
     }
 
-    const allUsers = await db.query.users.findMany({
-      columns: { id: true, email: true, name: true, role: true, isActive: true },
-      orderBy: (users, { asc }) => [asc(users.name)]
-    });
+    const allUsers = await db.select({
+      id: users.id,
+      email: users.email,
+      name: users.name,
+      role: users.role,
+      isActive: users.isActive,
+      avatarUrl: youths.avatarUrl
+    })
+    .from(users)
+    .leftJoin(leaders, eq(leaders.userId, users.id))
+    .leftJoin(youths, eq(youths.id, leaders.youthId))
+    .orderBy(users.name);
 
     res.json(allUsers);
   } catch (error) {
