@@ -32,6 +32,14 @@ const months = [
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
 ];
 
+const weekdays = [
+  'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'
+];
+
+function getWeekdayText(date: Date) {
+  return weekdays[date.getDay()];
+}
+
 export default function Birthdays() {
   const [youthList, setYouthList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -147,7 +155,9 @@ export default function Birthdays() {
                           <Link to={`/youth/${b.id}`} state={{ profile: b }} className="font-medium text-sm hover:underline hover:text-primary transition-colors">
                             {b.firstName} {b.lastName}
                           </Link>
-                          <p className="text-xs text-muted-foreground">{b.bDay} de {months[b.bMonth]}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {b.bDay} de {months[b.bMonth]} ({getWeekdayText(b.nextBday)})
+                          </p>
                         </div>
                       </div>
                       <Badge variant="outline" className="text-xs bg-background/50">Faltan {b.diffDays} días</Badge>
@@ -165,9 +175,6 @@ export default function Birthdays() {
 }
 
 function BirthdayCard({ person, highlight = false }: { person: any, highlight?: boolean }) {
-  // const ageTurns = new Date().getFullYear() - person.originalYear + (person.isToday || person.diffDays < 0 ? 0 : 1); // removed unused variable
-  // Wait, if it's today, they turn the age. If it's upcoming, they will turn the age.
-  
   return (
     <div className={`flex items-center gap-4 p-4 rounded-xl transition-all hover:scale-[1.02] ${highlight ? 'bg-background shadow-md' : 'bg-card border border-white/5 shadow-sm hover:shadow-md'}`}>
       <div className="w-14 h-14 rounded-full border-2 border-background shadow-sm overflow-hidden bg-muted flex items-center justify-center flex-shrink-0">
@@ -185,7 +192,9 @@ function BirthdayCard({ person, highlight = false }: { person: any, highlight?: 
           <Badge variant={highlight ? 'default' : 'secondary'} className={`text-xs ${highlight ? 'bg-primary text-primary-foreground' : 'bg-blue-500/10 text-blue-400'}`}>
             {person.isToday ? '¡Hoy!' : `En ${person.diffDays} días`}
           </Badge>
-          <span className="text-xs text-muted-foreground">{person.bDay} {months[person.bMonth].slice(0,3)}</span>
+          <span className="text-xs text-muted-foreground">
+            {person.bDay} {months[person.bMonth].slice(0,3)} ({getWeekdayText(person.nextBday)})
+          </span>
         </div>
       </div>
     </div>
