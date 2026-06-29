@@ -24,16 +24,16 @@ export function SidebarNav({ isOpen, onClose }: { isOpen?: boolean; onClose?: ()
   const { user, logout } = useAuth()
 
   return (
-    <aside className={`fixed inset-y-0 left-0 w-64 bg-[#0a0a0b]/95 lg:bg-card/80 backdrop-blur-xl border-r border-white/5 flex flex-col z-50 shadow-2xl transition-transform duration-300 lg:translate-x-0 ${
-      isOpen ? 'translate-x-0' : '-translate-x-full'
+    <aside className={`fixed inset-y-0 right-0 w-64 bg-[#0a0a0b]/95 lg:bg-card/80 backdrop-blur-xl border-l border-white/5 flex flex-col z-50 shadow-2xl transition-transform duration-300 lg:translate-x-0 lg:left-0 lg:right-auto lg:border-r lg:border-l-0 ${
+      isOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
     }`}>
       <div className="flex h-20 items-center justify-between px-8 border-b border-white/5">
-        <div className="flex items-center gap-3">
+        <Link to="/" onClick={onClose} className="flex items-center gap-3 hover:opacity-85 transition-opacity">
           <img src="/favicon.png" className="w-10 h-10 object-contain rounded-lg shadow-sm" alt="Logo" />
           <span className="font-bold text-xl tracking-tight text-foreground bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">
             Juventud BN
           </span>
-        </div>
+        </Link>
         {onClose && (
           <button 
             onClick={onClose}

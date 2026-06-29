@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
-import { Image as ImageIcon, Edit2, Plus, ShieldAlert, X } from "lucide-react"
+import { Image as ImageIcon, Edit2, Plus, ShieldAlert, X, Star } from "lucide-react"
 import { API_URL } from "../../lib/config"
 import { getImageUrl, compressImage } from "../../lib/utils"
 import { useApi } from "../../hooks/useApi"
@@ -228,16 +228,41 @@ export function MeetingForm({ onSubmit, initialData, isDropdownItem, forceOpen, 
                 </label>
               ) : (
                 <div className="grid grid-cols-3 gap-3">
-                  {photosList.map((photo) => (
-                    <div key={photo.id} className="relative h-24 rounded-lg overflow-hidden border border-white/10 shadow-md group">
+                  {photosList.map((photo, index) => (
+                    <div key={photo.id} className={`relative h-24 rounded-lg overflow-hidden shadow-md group transition-all ${index === 0 ? 'border-2 border-primary ring-2 ring-primary/20 scale-105 z-10' : 'border border-white/10'}`}>
                       <img src={photo.url} alt="Preview" className="w-full h-full object-cover" />
-                      <button 
-                        type="button" 
-                        onClick={() => handleRemovePhoto(photo.id)}
-                        className="absolute top-1.5 right-1.5 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full transition-all cursor-pointer shadow-md"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
+                      {index === 0 && (
+                        <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-primary text-[9px] font-bold text-primary-foreground rounded uppercase tracking-wider shadow">
+                          Principal
+                        </div>
+                      )}
+                      
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5">
+                        {index > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPhotosList(prev => {
+                                const newPrev = [...prev];
+                                const [selected] = newPrev.splice(index, 1);
+                                return [selected, ...newPrev];
+                              });
+                            }}
+                            className="p-1 bg-yellow-500 hover:bg-yellow-600 text-black rounded-full transition-all cursor-pointer shadow-md"
+                            title="Hacer Principal"
+                          >
+                            <Star className="w-3 h-3 fill-current" />
+                          </button>
+                        )}
+                        <button 
+                          type="button" 
+                          onClick={() => handleRemovePhoto(photo.id)}
+                          className="p-1 bg-red-500 hover:bg-red-600 text-white rounded-full transition-all cursor-pointer shadow-md"
+                          title="Eliminar"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                   
