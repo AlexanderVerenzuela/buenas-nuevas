@@ -501,14 +501,40 @@ export default function Meetings() {
                 {!loadingAttendance && (
                   <>
                     {(() => {
+                      const preacherName = selectedMeeting.preacher?.trim() || "";
+                      
+                      // Filtrar la lista de los que asistieron (status === 'PRESENT')
+                      // Si el predicador es un joven/líder registrado en la asistencia, lo consideramos predicador
+                      // De lo contrario, si alguien coincide con el nombre del predicador, lo aislamos del conteo general
                       const present = attendanceList.filter(y => y.attendances[0]?.status === 'PRESENT');
-                      const absent = attendanceList.filter(y => y.attendances[0]?.status !== 'PRESENT');
-                      const presentLeaders = present.filter(y => y.status === 'LEADER').length;
-                      const presentYouths = present.filter(y => y.status !== 'LEADER').length;
+                      
+                      // Identificar si el predicador está en la lista de presentes
+                      const isPreacherPresent = present.some(y => `${y.firstName} ${y.lastName || ''}`.trim() === preacherName);
+                      
+                      // Filtrar la lista excluyendo al predicador del conteo de líderes/jóvenes comunes y de la lista de asistieron generales
+                      const filteredPresent = present.filter(y => `${y.firstName} ${y.lastName || ''}`.trim() !== preacherName);
+                      
+                      const presentLeaders = filteredPresent.filter(y => y.status === 'LEADER').length;
+                      const presentYouths = filteredPresent.filter(y => y.status !== 'LEADER').length;
+
+                      // Filtrar la lista de ausentes excluyendo al predicador
+                      const absent = attendanceList.filter(y => 
+                        y.attendances[0]?.status !== 'PRESENT' && 
+                        `${y.firstName} ${y.lastName || ''}`.trim() !== preacherName
+                      );
+
+                      // Si el predicador tiene un nombre y no está en la base de datos o simplemente se quiere contabilizar:
+                      const hasPreacher = preacherName !== "";
 
                       return (
                         <div className="space-y-4">
-                          <div className="grid grid-cols-3 gap-3">
+                          <div className={`grid gap-3 ${hasPreacher ? 'grid-cols-4' : 'grid-cols-3'}`}>
+                            {hasPreacher && (
+                              <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 text-center">
+                                <div className="text-2xl font-bold text-yellow-400">{isPreacherPresent || selectedMeeting.status === 'COMPLETED' ? 1 : 0}</div>
+                                <div className="text-[10px] sm:text-xs text-yellow-400/80 font-medium">Predica</div>
+                              </div>
+                            )}
                             <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-3 text-center">
                               <div className="text-2xl font-bold text-green-400">{presentLeaders}</div>
                               <div className="text-[10px] sm:text-xs text-green-400/80 font-medium">Líderes</div>
@@ -518,7 +544,9 @@ export default function Meetings() {
                               <div className="text-[10px] sm:text-xs text-blue-400/80 font-medium">Jóvenes</div>
                             </div>
                             <div className="bg-primary/10 border border-primary/20 rounded-xl p-3 text-center">
-                              <div className="text-2xl font-bold text-primary">{present.length}</div>
+                              <div className="text-2xl font-bold text-primary">
+                                {filteredPresent.length + ((isPreacherPresent || selectedMeeting.status === 'COMPLETED') && hasPreacher ? 1 : 0)}
+                              </div>
                               <div className="text-[10px] sm:text-xs text-primary/80 font-medium">Total Asistió</div>
                             </div>
                           </div>
@@ -529,13 +557,21 @@ export default function Meetings() {
                             <div className="border border-white/5 bg-card/30 rounded-xl p-3">
                               <div className="text-xs font-semibold text-green-400 border-b border-white/5 pb-1.5 mb-2 flex justify-between">
                                 <span>ASISTIERON</span>
-                                <span className="bg-green-500/20 px-1.5 py-0.5 rounded text-[10px]">{present.length}</span>
+                                <span className="bg-green-500/20 px-1.5 py-0.5 rounded text-[10px]">
+                                  {filteredPresent.length + ((isPreacherPresent || selectedMeeting.status === 'COMPLETED') && hasPreacher ? 1 : 0)}
+                                </span>
                               </div>
                               <div className="max-h-[160px] overflow-y-auto scrollbar-thin text-xs space-y-1.5 pr-1">
-                                {present.length === 0 ? (
+                                {hasPreacher && (isPreacherPresent || selectedMeeting.status === 'COMPLETED') && (
+                                  <div className="py-1 px-1.5 bg-yellow-500/10 border border-yellow-500/20 rounded text-yellow-400 flex items-center justify-between font-semibold">
+                                    <span>{preacherName}</span>
+                                    <span className="text-[9px] uppercase tracking-wider bg-yellow-500/20 px-1 py-0.5 rounded">Predicador</span>
+                                  </div>
+                                )}
+                                {filteredPresent.length === 0 && !(hasPreacher && (isPreacherPresent || selectedMeeting.status === 'COMPLETED')) ? (
                                   <div className="text-muted-foreground/50 py-4 text-center">Nadie registrado</div>
                                 ) : (
-                                  present.map(y => (
+                                  filteredPresent.map(y => (
                                     <div key={y.id} className="py-1 px-1.5 hover:bg-white/5 rounded text-muted-foreground flex items-center justify-between">
                                       <span>{y.firstName} {y.lastName}</span>
                                     </div>

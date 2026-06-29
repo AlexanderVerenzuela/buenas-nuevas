@@ -11,10 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 export function AttendanceTableClient({ 
   meetingId, 
-  initialYouthList 
+  initialYouthList,
+  onSaveSuccess
 }: { 
   meetingId: string, 
-  initialYouthList: any[] 
+  initialYouthList: any[],
+  onSaveSuccess?: () => void
 }) {
   const [searchQuery, setSearchQuery] = useState("")
   const [pending, setPending] = useState(false)
@@ -86,6 +88,7 @@ export function AttendanceTableClient({
         }
       })
       setLocalAttendance(updatedState)
+      onSaveSuccess?.()
     } catch (error) {
       console.error(error)
       alert("Hubo un error al guardar. Asegúrate de haber reiniciado tu servidor (npm run dev) si te pedí hacerlo anteriormente.")

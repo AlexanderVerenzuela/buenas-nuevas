@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useApi } from '../hooks/useApi';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { AttendanceTableClient } from '../components/modules/AttendanceTableClient';
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, ZoomIn, X } from "lucide-react"
@@ -46,6 +46,8 @@ export default function Attendance() {
     fetchAttendanceData();
   }, [meetingId]);
 
+  const navigate = useNavigate();
+
   if (loading) return <div>Cargando datos de asistencia...</div>;
   if (!meeting) return <div>Reunión no encontrada.</div>;
 
@@ -79,7 +81,11 @@ export default function Attendance() {
         </div>
       </div>
 
-      <AttendanceTableClient meetingId={meetingId!} initialYouthList={youthList} />
+      <AttendanceTableClient 
+        meetingId={meetingId!} 
+        initialYouthList={youthList} 
+        onSaveSuccess={() => navigate('/meetings')} 
+      />
       {zoomedPhoto && (
         <div 
           onClick={() => setZoomedPhoto(null)}
