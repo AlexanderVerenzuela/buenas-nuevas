@@ -4,7 +4,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { AttendanceTableClient } from '../components/modules/AttendanceTableClient';
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, ZoomIn, X } from "lucide-react"
-import { getImageUrl } from '../lib/utils';
+import { getImageUrl, parseLocalDate } from '../lib/utils';
 
 function getFirstPhoto(photoUrl: string | null | undefined): string | null {
   if (!photoUrl) return null;
@@ -76,7 +76,7 @@ export default function Attendance() {
         <div className="relative z-10">
           <h2 className="text-2xl font-bold tracking-tight text-foreground">Pasar Lista: {meeting.title}</h2>
           <p className="text-sm text-muted-foreground">
-            {new Date(meeting.date).toLocaleDateString()} {meeting.time && `a las ${meeting.time}`}
+            {parseLocalDate(meeting.date).toLocaleDateString()} {meeting.time && `a las ${meeting.time}`}
           </p>
         </div>
       </div>

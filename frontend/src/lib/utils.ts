@@ -22,3 +22,11 @@ export function compressImage(file: File, _maxWidth = 400, _maxHeight = 400, _qu
   return Promise.resolve(file);
 }
 
+export function parseLocalDate(dateInput: string | Date | null | undefined): Date {
+  if (!dateInput) return new Date();
+  const dateStr = typeof dateInput === 'string' ? dateInput : dateInput.toISOString();
+  const [year, month, day] = dateStr.split('T')[0].split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+

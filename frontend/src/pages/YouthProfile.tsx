@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 
 import { ArrowLeft, Save, Briefcase, GraduationCap, CalendarDays, Phone, ZoomIn, X } from 'lucide-react';
 import { EditYouthForm } from '../components/modules/EditYouthForm';
-import { getImageUrl } from '../lib/utils';
+import { getImageUrl, parseLocalDate } from '../lib/utils';
 
 function calculateAge(birthDateString: string) {
   if (!birthDateString) return null;
@@ -212,7 +212,7 @@ export default function YouthProfile() {
                       <div>
                         <p className="font-medium text-sm">{att.meeting.title}</p>
                         <p className="text-xs text-muted-foreground flex items-center gap-1">
-                          <CalendarDays className="w-3 h-3" /> {new Date(att.meeting.date).toLocaleDateString()}
+                          <CalendarDays className="w-3 h-3" /> {parseLocalDate(att.meeting.date).toLocaleDateString()}
                         </p>
                       </div>
                     </div>

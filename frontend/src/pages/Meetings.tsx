@@ -8,7 +8,7 @@ import { Link } from "react-router-dom"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { MoreVertical, Trash2, CalendarDays, MapPin, Users, Mic, BookOpen, Clapperboard, Footprints, Sparkles, Edit2, ZoomIn, X } from "lucide-react"
-import { getImageUrl } from '../lib/utils';
+import { getImageUrl, parseLocalDate } from '../lib/utils';
 
 const typeMap: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
   GENERAL: { label: "Normal (Culto)", icon: <Mic className="w-3.5 h-3.5" />, color: "bg-blue-500/10 text-blue-400 border-blue-500/20" },
@@ -60,7 +60,7 @@ function getAllPhotos(photoUrl: string | null | undefined): string[] {
 
 const getMeetingStatus = (meeting: any) => {
   if (meeting.status === 'CANCELLED') return 'CANCELLED';
-  const meetingDate = new Date(meeting.date);
+  const meetingDate = parseLocalDate(meeting.date);
   if (meeting.time) {
     const [hours, minutes] = meeting.time.split(':');
     meetingDate.setHours(parseInt(hours) || 0, parseInt(minutes) || 0, 0, 0);
@@ -222,7 +222,7 @@ export default function Meetings() {
                     <TableCell className="text-sm">
                       <div className="flex items-center gap-1.5">
                         <CalendarDays className="w-3.5 h-3.5 text-muted-foreground" />
-                        {new Date(meeting.date).toLocaleDateString('es', { day: '2-digit', month: 'short', year: '2-digit' })}
+                        {parseLocalDate(meeting.date).toLocaleDateString('es', { day: '2-digit', month: 'short', year: '2-digit' })}
                       </div>
                       {meeting.time && <div className="text-xs text-muted-foreground ml-5">{meeting.time}</div>}
                     </TableCell>
@@ -353,7 +353,7 @@ export default function Meetings() {
                   <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground" onClick={() => handleViewDetails(meeting)}>
                     <div className="flex items-center gap-1.5 cursor-pointer">
                       <CalendarDays className="w-3.5 h-3.5 text-primary/60" />
-                      <span>{new Date(meeting.date).toLocaleDateString('es', { day: '2-digit', month: 'short' })}</span>
+                      <span>{parseLocalDate(meeting.date).toLocaleDateString('es', { day: '2-digit', month: 'short' })}</span>
                       {meeting.time && <span className="text-muted-foreground/60">• {meeting.time}</span>}
                     </div>
                     {meeting.location && (
@@ -437,7 +437,7 @@ export default function Meetings() {
                     <CalendarDays className="w-4 h-4 text-primary" />
                     <div>
                       <div className="text-xs font-semibold text-foreground">Fecha y Hora</div>
-                      <div>{new Date(selectedMeeting.date).toLocaleDateString('es', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}</div>
+                      <div>{parseLocalDate(selectedMeeting.date).toLocaleDateString('es', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}</div>
                       {selectedMeeting.time && <div className="text-xs text-muted-foreground">{selectedMeeting.time}</div>}
                     </div>
                   </div>
